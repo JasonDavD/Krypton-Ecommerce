@@ -1,0 +1,58 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Spring Boot 3 + Java, Maven. PostgreSQL (Docker local + Supabase/Neon prod), Flyway.
+  Architecture: Capas con interfaces. Base package pe.com.krypton.
+    controller -> service(+impl) -> repository -> model(@Entity). DTOs en la frontera, mapper Entity<->DTO.
+  Data model: 8 tablas (users, categories, products, cart, cart_item, orders, order_items, stock_movement).
+    Carrito persistido, SKU, kardex (stock_movement) + products.stock cacheado, checkout transaccional.
+  Testing: JUnit 5 + Mockito (unit), Spring Boot Test + Testcontainers PostgreSQL (integration). Cmd: mvn test.
+  Security: Spring Security + JWT, roles CLIENTE/ADMIN.
+  Scope: backend only (frontend React/Angular sin decidir; API REST frontend-agnostica).
+
+strict_tdd: true
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected modules/packages
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group tasks by phase (infrastructure, implementation, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    tdd: true
+    test_command: "mvn test"
+  verify:
+    test_command: "mvn test"
+    build_command: "mvn -q -DskipTests package"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas (large removals)
+
+testing:
+  strict_tdd: true
+  test_runner:
+    framework: "JUnit 5 (Maven Surefire)"
+    command: "mvn test"
+  layers:
+    unit: "JUnit 5 + Mockito"
+    integration: "Spring Boot Test + Testcontainers (PostgreSQL)"
+    e2e: "—"
+  coverage:
+    available: false
+    command: "—  (recomendado: JaCoCo al scaffoldear)"
+  quality:
+    linter: "—"
+    type_checker: "javac (mvn compile)"
+    formatter: "—"
+  note: >
+    Greenfield: stack DECIDIDO, todavia no scaffoldeado. Las capacidades quedan
+    activas (mvn test ejecutable) recien cuando el primer cambio cree el proyecto Maven.

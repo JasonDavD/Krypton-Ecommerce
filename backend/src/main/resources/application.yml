@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: krypton-backend
+  profiles:
+    active: local
+  jpa:
+    hibernate:
+      ddl-auto: validate          # Flyway es dueño del schema; Hibernate solo valida
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true                 # aplica las migraciones pendientes al arrancar
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/krypton
+    username: krypton
+    password: krypton
