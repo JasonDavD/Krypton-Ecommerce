@@ -31,6 +31,9 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(nullable = false)
+    private boolean active = true;   // un usuario nace activo; primitivo → nunca null
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 }

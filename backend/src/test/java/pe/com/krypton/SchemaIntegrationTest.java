@@ -26,4 +26,14 @@ class SchemaIntegrationTest extends AbstractIntegrationTest {
                 "users", "categories", "products", "cart",
                 "cart_item", "orders", "order_items", "stock_movement");
     }
+
+    @Test
+    void v2_adds_active_column_to_users() {
+        List<String> columns = jdbcTemplate.queryForList(
+                "SELECT column_name FROM information_schema.columns "
+                        + "WHERE table_schema = 'public' AND table_name = 'users'",
+                String.class);
+
+        assertThat(columns).contains("active");
+    }
 }
