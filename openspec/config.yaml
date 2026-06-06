@@ -29,10 +29,10 @@ rules:
   apply:
     - Follow existing code patterns and conventions
     tdd: true
-    test_command: "mvn test"
+    test_command: "cd backend && ./mvnw test"
   verify:
-    test_command: "mvn test"
-    build_command: "mvn -q -DskipTests package"
+    test_command: "cd backend && ./mvnw test"
+    build_command: "cd backend && ./mvnw -q -DskipTests package"
     coverage_threshold: 0
   archive:
     - Warn before merging destructive deltas (large removals)
@@ -41,7 +41,7 @@ testing:
   strict_tdd: true
   test_runner:
     framework: "JUnit 5 (Maven Surefire)"
-    command: "mvn test"
+    command: "cd backend && ./mvnw test"
   layers:
     unit: "JUnit 5 + Mockito"
     integration: "Spring Boot Test + Testcontainers (PostgreSQL)"
