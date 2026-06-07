@@ -20,11 +20,11 @@
 
 ## Phase 2: Service Layer — RED → GREEN → REFACTOR
 
-- [ ] 2.1 **RED** — Write `ProductServiceImplTest`: failing tests for duplicate-SKU-on-create (409), update-ignores-stock, soft-delete-sets-active-false, get-by-id-inactive-throws-404.
-- [ ] 2.2 **GREEN** — Create `service/ProductService` (interface) + `service/impl/ProductServiceImpl`: `search(filters, Pageable)`, `getById(Long)`, `create(ProductRequest)`, `update(Long, ProductRequest)`, `delete(Long)`. Stock bootstrap on create; update mapper must NOT write stock field; delete = `active = false`.
-- [ ] 2.3 **RED** — Write `CategoryServiceImplTest`: failing tests for duplicate-name-on-create (409), update-own-name-excluded, delete-throws-CategoryInUseException-when-products-exist, delete-succeeds-when-no-products.
-- [ ] 2.4 **GREEN** — Create `service/CategoryService` (interface) + `service/impl/CategoryServiceImpl`: `list()`, `getById(Long)`, `create(CategoryRequest)`, `update(Long, CategoryRequest)`, `delete(Long)`. Delete guard: `existsByCategoryId(id)` → throw before any DB write.
-- [ ] 2.5 **REFACTOR** — Extract duplicated `findOrThrow` helper in both service impls; verify no business rule leaks into controllers.
+- [x] 2.1 **RED** — Write `ProductServiceImplTest`: failing tests for duplicate-SKU-on-create (409), update-ignores-stock, soft-delete-sets-active-false, get-by-id-inactive-throws-404.
+- [x] 2.2 **GREEN** — Create `service/ProductService` (interface) + `service/impl/ProductServiceImpl`: `search(filters, Pageable)`, `getById(Long)`, `create(ProductRequest)`, `update(Long, ProductRequest)`, `delete(Long)`. Stock bootstrap on create; update mapper must NOT write stock field; delete = `active = false`.
+- [x] 2.3 **RED** — Write `CategoryServiceImplTest`: failing tests for duplicate-name-on-create (409), update-own-name-excluded, delete-throws-CategoryInUseException-when-products-exist, delete-succeeds-when-no-products.
+- [x] 2.4 **GREEN** — Create `service/CategoryService` (interface) + `service/impl/CategoryServiceImpl`: `list()`, `getById(Long)`, `create(CategoryRequest)`, `update(Long, CategoryRequest)`, `delete(Long)`. Delete guard: `existsByCategoryId(id)` → throw before any DB write.
+- [x] 2.5 **REFACTOR** — Extract duplicated `findOrThrow` helper in both service impls; verify no business rule leaks into controllers.
 
 ---
 
