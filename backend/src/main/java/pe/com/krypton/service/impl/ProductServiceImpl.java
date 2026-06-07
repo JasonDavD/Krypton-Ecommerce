@@ -37,13 +37,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> search(String name, Long categoryId,
-                                                 BigDecimal minPrice, BigDecimal maxPrice,
+                                                 BigDecimal priceMin, BigDecimal priceMax,
                                                  Pageable pageable) {
         Specification<Product> spec = Specification
                 .where(ProductSpecification.isActive(true))
                 .and(ProductSpecification.nameLike(name))
                 .and(ProductSpecification.hasCategory(categoryId))
-                .and(ProductSpecification.priceBetween(minPrice, maxPrice));
+                .and(ProductSpecification.priceBetween(priceMin, priceMax));
 
         Page<ProductResponse> page = productRepository
                 .findAll(spec, pageable)

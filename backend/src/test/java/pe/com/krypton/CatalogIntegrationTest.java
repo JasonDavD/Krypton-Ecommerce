@@ -290,27 +290,23 @@ class CatalogIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void delete_category_succeeds_after_soft_deleting_its_product() throws Exception {
+    void delete_category_with_soft_deleted_product_still_returns_409() throws Exception {
         String token = adminToken();
         long catId  = createCategory(token, "IT-SoftDel-Cat");
         long prodId = createProduct(token, "IT-SOFTDEL-01", "IT-SoftProduct", catId);
 
-        // Soft-delete del producto
+        // Soft-delete del producto: queda active=false pero la fila persiste con su FK category_id.
         mvc.perform(delete("/api/admin/products/" + prodId)
                         .header(HttpHeaders.AUTHORIZATION, bearer(token)))
                 .andExpect(status().isNoContent());
 
-        // La categoría ahora tiene 0 productos activos, pero existsByCategoryId mira
-        // TODAS las filas (activas e inactivas). El guard impide el delete mientras el
-        // producto (soft-deleted) siga apuntando a la categoría.
-        // Este test documenta el comportamiento real del sistema.
-        // Verificamos que la respuesta es consistente: o 204 (si guard ignora inactivos)
-        // o 409 (si guard incluye inactivos). No afirmamos un código específico aquí;
-        // en cambio creamos una cat REALMENTE vacía y verificamos 204.
-        long emptyCatId = createCategory(token, "IT-TrulyEmpty-Cat");
-        mvc.perform(delete("/api/admin/categories/" + emptyCatId)
+        // El guard usa existsByCategoryId, que cuenta TODAS las filas (activas e inactivas).
+        // Un producto soft-deleted sigue referenciando la categoría por la FK NOT NULL, así que
+        // borrar la categoría DEBE seguir devolviendo 409 — decisión deliberada que evita la
+        // violación de FK que provocaría el hard-delete con filas huérfanas (ver engram #298).
+        mvc.perform(delete("/api/admin/categories/" + catId)
                         .header(HttpHeaders.AUTHORIZATION, bearer(token)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isConflict());
     }
 
     // ------------------------------------------------------------------ task 5.5: autorización

@@ -14,7 +14,7 @@ public interface ProductService {
      * en la ruta pública; el admin puede omitir ese filtro si se expone otra firma.
      */
     PageResponse<ProductResponse> search(String name, Long categoryId,
-                                         BigDecimal minPrice, BigDecimal maxPrice,
+                                         BigDecimal priceMin, BigDecimal priceMax,
                                          Pageable pageable);
 
     /** Retorna el producto activo o lanza ResourceNotFoundException (404). */
