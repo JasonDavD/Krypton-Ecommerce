@@ -16,6 +16,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(409, ex.getMessage()));
     }
 
+    @ExceptionHandler(DuplicateSkuException.class)
+    public ResponseEntity<ApiError> handleDuplicateSku(DuplicateSkuException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(409, ex.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateCategoryNameException.class)
+    public ResponseEntity<ApiError> handleDuplicateCategoryName(DuplicateCategoryNameException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(409, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CategoryInUseException.class)
+    public ResponseEntity<ApiError> handleCategoryInUse(CategoryInUseException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(409, ex.getMessage()));
+    }
+
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiError> handleInvalidCredentials(InvalidCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(401, ex.getMessage()));
