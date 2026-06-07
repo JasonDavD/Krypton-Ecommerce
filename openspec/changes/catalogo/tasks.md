@@ -30,15 +30,15 @@
 
 ## Phase 3: Controller Layer — RED → GREEN → REFACTOR
 
-- [ ] 3.1 **RED** — Write `@WebMvcTest` slice for `ProductController`: GET `/api/products` 200 with filters, GET `/api/products/{id}` 200/404; no token required.
-- [ ] 3.2 **GREEN** — Create `controller/ProductController`: `GET /api/products` (search + paginate, active-only), `GET /api/products/{id}` (404 if inactive).
-- [ ] 3.3 **RED** — Write `@WebMvcTest` slice for `AdminProductController`: POST 201, PUT 200, DELETE 204, validation 400, 409 mapping; 401 without token, 403 non-ADMIN.
-- [ ] 3.4 **GREEN** — Create `controller/AdminProductController`: `POST /api/admin/products`, `PUT /api/admin/products/{id}`, `DELETE /api/admin/products/{id}`.
-- [ ] 3.5 **RED** — Write `@WebMvcTest` slice for `CategoryController`: GET `/api/categories` 200, GET `/{id}` 200/404; no token required.
-- [ ] 3.6 **GREEN** — Create `controller/CategoryController`: `GET /api/categories`, `GET /api/categories/{id}`.
-- [ ] 3.7 **RED** — Write `@WebMvcTest` slice for `AdminCategoryController`: POST 201, PUT 200, DELETE 204/409; 401/403 authz.
-- [ ] 3.8 **GREEN** — Create `controller/AdminCategoryController`: `POST /api/admin/categories`, `PUT /api/admin/categories/{id}`, `DELETE /api/admin/categories/{id}`.
-- [ ] 3.9 **REFACTOR** — Align response wrapping and HTTP status codes across all four controllers; confirm no `@Entity` or `Page<T>` escapes the service boundary.
+- [x] 3.1 **RED** — Write `@WebMvcTest` slice for `ProductController`: GET `/api/products` 200 with filters, GET `/api/products/{id}` 200/404; no token required.
+- [x] 3.2 **GREEN** — Create `controller/ProductController`: `GET /api/products` (search + paginate, active-only), `GET /api/products/{id}` (404 if inactive).
+- [x] 3.3 **RED** — Write `@WebMvcTest` slice for `AdminProductController`: POST 201, PUT 200, DELETE 204, validation 400, 409 mapping; 401 without token, 403 non-ADMIN.
+- [x] 3.4 **GREEN** — Create `controller/AdminProductController`: `POST /api/admin/products`, `PUT /api/admin/products/{id}`, `DELETE /api/admin/products/{id}`.
+- [x] 3.5 **RED** — Write `@WebMvcTest` slice for `CategoryController`: GET `/api/categories` 200, GET `/{id}` 200/404; no token required.
+- [x] 3.6 **GREEN** — Create `controller/CategoryController`: `GET /api/categories`, `GET /api/categories/{id}`.
+- [x] 3.7 **RED** — Write `@WebMvcTest` slice for `AdminCategoryController`: POST 201, PUT 200, DELETE 204/409; 401/403 authz.
+- [x] 3.8 **GREEN** — Create `controller/AdminCategoryController`: `POST /api/admin/categories`, `PUT /api/admin/categories/{id}`, `DELETE /api/admin/categories/{id}`.
+- [x] 3.9 **REFACTOR** — Align response wrapping and HTTP status codes across all four controllers; confirm no `@Entity` or `Page<T>` escapes the service boundary.
 
 ---
 
