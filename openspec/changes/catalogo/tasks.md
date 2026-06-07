@@ -44,18 +44,18 @@
 
 ## Phase 4: Security Config Delta
 
-- [ ] 4.1 Modify `config/SecurityConfig`: insert `.requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()` BEFORE `anyRequest().authenticated()`. GET-only scope; non-GET remains protected.
+- [x] 4.1 Modify `config/SecurityConfig`: insert `.requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()` BEFORE `anyRequest().authenticated()`. GET-only scope; non-GET remains protected.
 
 ---
 
 ## Phase 5: Integration Tests (Testcontainers PostgreSQL)
 
-- [ ] 5.1 Write integration test: `GET /api/products` returns 200 with no token + only `active=true` rows; verify `GET /api/products/{id}` on an inactive product returns 404.
-- [ ] 5.2 Write integration test: composed filters (name substring, categoryId, price range) return correct pages.
-- [ ] 5.3 Write integration test: `POST /api/admin/products` with duplicate SKU returns 409; payload with missing required field returns 400.
-- [ ] 5.4 Write integration test: `DELETE /api/admin/categories/{id}` returns 409 when products reference the category; returns 204 when none do.
-- [ ] 5.5 Write integration test: non-ADMIN user → 403 on any `/api/admin/**`; unauthenticated → 401 on admin writes.
-- [ ] 5.6 Add `@AfterEach` / `@Sql` cleanup in FK order (products first, then categories) to prevent catalog rows from breaking auth integration tests on the shared Testcontainers container.
+- [x] 5.1 Write integration test: `GET /api/products` returns 200 with no token + only `active=true` rows; verify `GET /api/products/{id}` on an inactive product returns 404.
+- [x] 5.2 Write integration test: composed filters (name substring, categoryId, price range) return correct pages.
+- [x] 5.3 Write integration test: `POST /api/admin/products` with duplicate SKU returns 409; payload with missing required field returns 400.
+- [x] 5.4 Write integration test: `DELETE /api/admin/categories/{id}` returns 409 when products reference the category; returns 204 when none do.
+- [x] 5.5 Write integration test: non-ADMIN user → 403 on any `/api/admin/**`; unauthenticated → 401 on admin writes.
+- [x] 5.6 Add `@AfterEach` / `@Sql` cleanup in FK order (products first, then categories) to prevent catalog rows from breaking auth integration tests on the shared Testcontainers container.
 
 ---
 
