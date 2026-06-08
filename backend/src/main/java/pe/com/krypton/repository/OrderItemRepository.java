@@ -1,7 +1,11 @@
 package pe.com.krypton.repository;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import pe.com.krypton.model.Order;
 import pe.com.krypton.model.OrderItem;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
+
+    List<OrderItem> findByOrder(Order order);
 }
