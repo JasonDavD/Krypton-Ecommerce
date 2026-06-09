@@ -39,7 +39,7 @@ public class AdminOrderController {
         return orderService.getOrder(id);
     }
 
-    /** PUT /api/admin/orders/{id}/status → 200 OrderResponse (free-form status update, no guard) */
+    /** PUT /api/admin/orders/{id}/status → 200 OrderResponse (transición validada; 422 si es ilegal) */
     @PutMapping("/{id}/status")
     public OrderResponse updateStatus(@PathVariable Long id,
                                       @Valid @RequestBody OrderStatusUpdateRequest request) {

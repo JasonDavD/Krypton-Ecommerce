@@ -23,6 +23,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import pe.com.krypton.dto.response.OrderResponse;
 import pe.com.krypton.dto.response.PageResponse;
+import pe.com.krypton.exception.OrderStatusTransitionException;
 import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.security.JwtAuthenticationFilter;
 import pe.com.krypton.service.OrderService;
@@ -105,6 +106,21 @@ class AdminOrderControllerTest {
                         .content("{\"status\":\"CANCELADA\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CANCELADA"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void put_status_illegal_transition_returns_422() throws Exception {
+        // Contrato de capa web: una transición ilegal (CANCELADA → CONFIRMADA) que el
+        // service rechaza con OrderStatusTransitionException debe salir como 422,
+        // gracias al mapeo del GlobalExceptionHandler (@RestControllerAdvice).
+        when(orderService.updateStatus(eq(2L), any()))
+                .thenThrow(new OrderStatusTransitionException(
+                        "Transición de estado inválida: CANCELADA → CONFIRMADA"));
+
+        mvc.perform(put("/api/admin/orders/2/status").contentType(JSON)
+                        .content("{\"status\":\"CONFIRMADA\"}"))
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

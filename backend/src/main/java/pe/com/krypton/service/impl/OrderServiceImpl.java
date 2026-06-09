@@ -13,7 +13,6 @@ import pe.com.krypton.dto.response.OrderResponse;
 import pe.com.krypton.dto.response.PageResponse;
 import pe.com.krypton.exception.EmptyCartException;
 import pe.com.krypton.exception.InsufficientStockException;
-import pe.com.krypton.exception.OrderStatusTransitionException;
 import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.mapper.OrderMapper;
 import pe.com.krypton.model.Cart;
@@ -25,6 +24,7 @@ import pe.com.krypton.model.StockMovement;
 import pe.com.krypton.model.User;
 import pe.com.krypton.model.enums.MovementType;
 import pe.com.krypton.model.enums.OrderStatus;
+import pe.com.krypton.policy.OrderStatusPolicy;
 import pe.com.krypton.repository.CartItemRepository;
 import pe.com.krypton.repository.CartRepository;
 import pe.com.krypton.repository.OrderItemRepository;
@@ -47,6 +47,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final CartService cartService;
     private final OrderMapper orderMapper;
+    private final OrderStatusPolicy statusPolicy;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             OrderItemRepository orderItemRepository,
@@ -56,7 +57,8 @@ public class OrderServiceImpl implements OrderService {
                             CartItemRepository cartItemRepository,
                             UserRepository userRepository,
                             CartService cartService,
-                            OrderMapper orderMapper) {
+                            OrderMapper orderMapper,
+                            OrderStatusPolicy statusPolicy) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
@@ -66,6 +68,7 @@ public class OrderServiceImpl implements OrderService {
         this.userRepository = userRepository;
         this.cartService = cartService;
         this.orderMapper = orderMapper;
+        this.statusPolicy = statusPolicy;
     }
 
     // ─── CLIENT: checkout ────────────────────────────────────────────────────────
@@ -180,13 +183,8 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByIdAndUser(orderId, user)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Orden no encontrada: " + orderId));
-        if (order.getStatus() != OrderStatus.PENDIENTE) {
-            throw new OrderStatusTransitionException(
-                    "Solo se puede pagar una orden en estado PENDIENTE. Estado actual: "
-                    + order.getStatus().name());
-        }
-        order.setStatus(OrderStatus.CONFIRMADA);
-        orderRepository.save(order);
+        // Pago = transición PENDIENTE → CONFIRMADA. La guarda la aplica statusPolicy.
+        transitionTo(order, OrderStatus.CONFIRMADA);
         return orderMapper.toResponse(order, orderItemRepository.findByOrder(order));
     }
 
@@ -216,12 +214,54 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Orden no encontrada: " + orderId));
-        order.setStatus(newStatus);
-        orderRepository.save(order);
+        transitionTo(order, newStatus);
         return orderMapper.toResponse(order, orderItemRepository.findByOrder(order));
     }
 
     // ─── private helpers ─────────────────────────────────────────────────────────
+
+    /**
+     * Único punto de cambio de estado. Valida la transición contra la máquina de
+     * estados (statusPolicy) y, si el destino es CANCELADA, repone el stock.
+     * El efecto secundario se orquesta aquí —no en la policy— por separación de
+     * responsabilidades: la policy solo decide "¿es legal?".
+     */
+    private void transitionTo(Order order, OrderStatus newStatus) {
+        statusPolicy.assertCanTransition(order.getStatus(), newStatus);
+        if (newStatus == OrderStatus.CANCELADA) {
+            revertStock(order);
+        }
+        order.setStatus(newStatus);
+        orderRepository.save(order);
+    }
+
+    /**
+     * Reposición de stock al cancelar — espejo inverso del SALIDA del checkout.
+     * El stock se descontó en checkout (estado PENDIENTE), así que CUALQUIER
+     * cancelación debe devolverlo: incrementa products.stock y registra un
+     * StockMovement(ENTRADA) por cada ítem, manteniendo stock cacheado y kardex
+     * consistentes. Bloquea cada producto (PESSIMISTIC_WRITE) igual que el checkout.
+     */
+    private void revertStock(Order order) {
+        for (OrderItem item : orderItemRepository.findByOrder(order)) {
+            Long productId = item.getProduct().getId();
+            Product product = productRepository.findByIdWithLock(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Producto no encontrado: " + productId));
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
+
+            StockMovement movement = new StockMovement();
+            movement.setProduct(product);
+            movement.setType(MovementType.ENTRADA);
+            movement.setQuantity(item.getQuantity());
+            movement.setReason("Cancelación orden #" + order.getId());
+            movement.setReference("ORDER-" + order.getId());
+            movement.setCreatedAt(Instant.now());
+            movement.setCreatedBy(null);
+            stockMovementRepository.save(movement);
+        }
+    }
 
     private User resolveUser(String email) {
         return userRepository.findByEmail(email)
