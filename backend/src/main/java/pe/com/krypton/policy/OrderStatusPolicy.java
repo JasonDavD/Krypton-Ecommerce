@@ -32,7 +32,7 @@ public class OrderStatusPolicy {
 
     /** Lanza {@link OrderStatusTransitionException} (422) si la transición no es legal. */
     public void assertCanTransition(OrderStatus from, OrderStatus to) {
-        if (!ALLOWED.get(from).contains(to)) {
+        if (!ALLOWED.getOrDefault(from, Set.of()).contains(to)) {
             throw new OrderStatusTransitionException(
                     "Transición de estado inválida: " + from + " → " + to);
         }
