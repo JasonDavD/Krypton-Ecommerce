@@ -41,6 +41,7 @@ import pe.com.krypton.model.User;
 import pe.com.krypton.model.enums.MovementType;
 import pe.com.krypton.model.enums.OrderStatus;
 import pe.com.krypton.model.enums.PaymentMethod;
+import pe.com.krypton.policy.OrderStatusPolicy;
 import pe.com.krypton.repository.CartItemRepository;
 import pe.com.krypton.repository.CartRepository;
 import pe.com.krypton.repository.OrderItemRepository;
@@ -70,12 +71,15 @@ class OrderServiceImplTest {
 
     OrderServiceImpl service;
 
+    // Pure domain rule — real instance, not a mock (no I/O, like a value object).
+    final OrderStatusPolicy statusPolicy = new OrderStatusPolicy();
+
     @BeforeEach
     void setUp() {
         service = new OrderServiceImpl(
                 orderRepository, orderItemRepository, productRepository,
                 stockMovementRepository, cartRepository, cartItemRepository,
-                userRepository, cartService, orderMapper);
+                userRepository, cartService, orderMapper, statusPolicy);
     }
 
     // ─── helpers ────────────────────────────────────────────────────────────────
@@ -437,21 +441,93 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void updateStatus_sets_arbitrary_status_with_no_guard() {
+    void updateStatus_confirmada_to_cancelada_reverts_stock_with_entrada_movement() {
         User u = user(3L, "client@krypton.pe");
-        Order o = order(2L, u, BigDecimal.TEN, OrderStatus.CONFIRMADA);
-        List<OrderItem> items = List.of();
+        Order o = order(2L, u, new BigDecimal("599.80"), OrderStatus.CONFIRMADA);
+        Product p = product(10L, "Notebook", new BigDecimal("299.90"), 3); // stock tras la venta
+        OrderItem item = orderItem(1L, o, p, 2, new BigDecimal("299.90"));
+        List<OrderItem> items = List.of(item);
 
         when(orderRepository.findById(2L)).thenReturn(Optional.of(o));
-        when(orderRepository.save(o)).thenReturn(o);
         when(orderItemRepository.findByOrder(o)).thenReturn(items);
-        when(orderMapper.toResponse(o, items)).thenReturn(
-                new OrderResponse(2L, 3L, Instant.now(), "CANCELADA", BigDecimal.TEN, List.of()));
+        when(productRepository.findByIdWithLock(10L)).thenReturn(Optional.of(p));
+        when(orderRepository.save(o)).thenReturn(o);
+        when(orderMapper.toResponse(eq(o), any())).thenReturn(
+                new OrderResponse(2L, 3L, Instant.now(), "CANCELADA", new BigDecimal("599.80"), List.of()));
 
         OrderResponse result = service.updateStatus(2L, OrderStatus.CANCELADA);
 
         assertThat(o.getStatus()).isEqualTo(OrderStatus.CANCELADA);
-        verify(orderRepository).save(o);
+        assertThat(p.getStock()).isEqualTo(5); // 3 + 2 repuestas
+        verify(productRepository).save(p);
+
+        ArgumentCaptor<StockMovement> movCaptor = ArgumentCaptor.forClass(StockMovement.class);
+        verify(stockMovementRepository).save(movCaptor.capture());
+        StockMovement mov = movCaptor.getValue();
+        assertThat(mov.getType()).isEqualTo(MovementType.ENTRADA);
+        assertThat(mov.getQuantity()).isEqualTo(2);
+        assertThat(mov.getReason()).isEqualTo("Cancelación orden #2");
+        assertThat(mov.getReference()).isEqualTo("ORDER-2");
+        assertThat(mov.getCreatedBy()).isNull();
         assertThat(result.status()).isEqualTo("CANCELADA");
+    }
+
+    @Test
+    void updateStatus_pendiente_to_cancelada_also_reverts_stock() {
+        // Clave: el stock se descontó en checkout (PENDIENTE), así que cancelar
+        // sin haber pagado TAMBIÉN debe reponerlo.
+        User u = user(3L, "client@krypton.pe");
+        Order o = order(2L, u, new BigDecimal("299.90"), OrderStatus.PENDIENTE);
+        Product p = product(10L, "Notebook", new BigDecimal("299.90"), 4);
+        OrderItem item = orderItem(1L, o, p, 1, new BigDecimal("299.90"));
+
+        when(orderRepository.findById(2L)).thenReturn(Optional.of(o));
+        when(orderItemRepository.findByOrder(o)).thenReturn(List.of(item));
+        when(productRepository.findByIdWithLock(10L)).thenReturn(Optional.of(p));
+        when(orderRepository.save(o)).thenReturn(o);
+        when(orderMapper.toResponse(eq(o), any())).thenReturn(
+                new OrderResponse(2L, 3L, Instant.now(), "CANCELADA", new BigDecimal("299.90"), List.of()));
+
+        service.updateStatus(2L, OrderStatus.CANCELADA);
+
+        assertThat(o.getStatus()).isEqualTo(OrderStatus.CANCELADA);
+        assertThat(p.getStock()).isEqualTo(5); // 4 + 1
+        verify(stockMovementRepository).save(any(StockMovement.class));
+    }
+
+    @Test
+    void updateStatus_cancelada_to_confirmada_throws_and_nothing_persisted() {
+        // CANCELADA es terminal: revivir una orden cancelada es ilegal.
+        User u = user(3L, "client@krypton.pe");
+        Order o = order(2L, u, BigDecimal.TEN, OrderStatus.CANCELADA);
+
+        when(orderRepository.findById(2L)).thenReturn(Optional.of(o));
+
+        assertThatThrownBy(() -> service.updateStatus(2L, OrderStatus.CONFIRMADA))
+                .isInstanceOf(OrderStatusTransitionException.class);
+
+        verify(orderRepository, never()).save(any());
+        verify(stockMovementRepository, never()).save(any());
+        verify(productRepository, never()).save(any());
+    }
+
+    @Test
+    void updateStatus_pendiente_to_confirmada_does_not_touch_stock() {
+        // Transición legal que NO es cancelación → no reposición de stock.
+        User u = user(3L, "client@krypton.pe");
+        Order o = order(2L, u, BigDecimal.TEN, OrderStatus.PENDIENTE);
+
+        when(orderRepository.findById(2L)).thenReturn(Optional.of(o));
+        when(orderRepository.save(o)).thenReturn(o);
+        when(orderItemRepository.findByOrder(o)).thenReturn(List.of());
+        when(orderMapper.toResponse(eq(o), any())).thenReturn(
+                new OrderResponse(2L, 3L, Instant.now(), "CONFIRMADA", BigDecimal.TEN, List.of()));
+
+        OrderResponse result = service.updateStatus(2L, OrderStatus.CONFIRMADA);
+
+        assertThat(o.getStatus()).isEqualTo(OrderStatus.CONFIRMADA);
+        verify(stockMovementRepository, never()).save(any());
+        verify(productRepository, never()).save(any());
+        assertThat(result.status()).isEqualTo("CONFIRMADA");
     }
 }

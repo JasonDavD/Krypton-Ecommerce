@@ -31,6 +31,10 @@ public interface OrderService {
     /** Admin: single order by id. Throws ResourceNotFoundException (404) if not found. */
     OrderResponse getOrder(Long orderId);
 
-    /** Admin: free-form status update (no transition guard). */
+    /**
+     * Admin: cambia el estado de una orden respetando la máquina de estados
+     * (OrderStatusPolicy). Transición ilegal → OrderStatusTransitionException (422).
+     * Cancelar (→ CANCELADA) repone el stock con un StockMovement(ENTRADA).
+     */
     OrderResponse updateStatus(Long orderId, OrderStatus newStatus);
 }
