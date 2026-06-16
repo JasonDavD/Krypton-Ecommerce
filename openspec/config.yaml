@@ -8,7 +8,9 @@ context: |
     Carrito persistido, SKU, kardex (stock_movement) + products.stock cacheado, checkout transaccional.
   Testing: JUnit 5 + Mockito (unit), Spring Boot Test + Testcontainers PostgreSQL (integration). Cmd: mvn test.
   Security: Spring Security + JWT, roles CLIENTE/ADMIN.
-  Scope: backend only (frontend React/Angular sin decidir; API REST frontend-agnostica).
+  Scope: backend + frontend. Backend: Spring Boot REST API (frontend-agnostica). Frontend: Angular SPA
+    (standalone components), greenfield (aun no scaffoldeada; ng new ocurre en la fase APPLY), consume
+    la API REST existente. Frontend resuelto en DESIGN: Angular 18, Jest (npm test), strict_tdd scoped.
 
 strict_tdd: true
 
@@ -56,3 +58,17 @@ testing:
   note: >
     Greenfield: stack DECIDIDO, todavia no scaffoldeado. Las capacidades quedan
     activas (mvn test ejecutable) recien cuando el primer cambio cree el proyecto Maven.
+
+frontend:
+  stack: "Angular 18 + TypeScript (standalone components)"
+  state: "greenfield — aun no scaffoldeado; `ng new` ocurre en la Phase 1 de APPLY de frontend-foundation"
+  consumes: "API REST Spring Boot existente (frontend-agnostica)"
+  location: "frontend/"
+  strict_tdd: "scoped — RED-GREEN estricto en services/guards/interceptors (logica pura, HttpClient mockeable); render-tests pragmaticos en componentes solo en caminos criticos"
+  test_runner: "Jest (jest-preset-angular)"
+  test_command: "cd frontend && npm test"   # CI: cd frontend && npm test -- --ci
+  note: >
+    Decidido en DESIGN de frontend-foundation y confirmado por el usuario (2026-06-15). El
+    test_command frontend se forwardea a sdd-apply/sdd-verify de cambios FRONTEND (distinto del
+    backend `cd backend && ./mvnw test`). Jest corre recien despues del `ng new` + setup
+    jest-preset-angular (Phase 1 de tasks). Ver engram frontend/testing-config.
