@@ -1,7 +1,7 @@
 # Skill Registry — Krypton-Ecommerce
 
 > Generado por sdd-init. Archivo de infraestructura (no es artefacto SDD).
-> Última actualización: 2026-06-05
+> Última actualización: 2026-06-15
 
 ## Project Skills
 
@@ -9,6 +9,14 @@
 |-------|---------------------------|---------|
 | `krypton-backend` | Escribir/revisar Java backend: entities, repositories, services, controllers, DTOs, mappers, migraciones Flyway | `.claude/skills/krypton-backend/SKILL.md` |
 | `krypton-tdd` | Escribir tests o implementar features bajo Strict TDD (RED-GREEN-REFACTOR) | `.claude/skills/krypton-tdd/SKILL.md` |
+
+## Frontend Skills
+
+| Skill | Trigger (cuándo se carga) | Archivo |
+|-------|---------------------------|---------|
+| `frontend-design` (global) | Generar componentes Angular, páginas, UI — cualquier fase que produzca código de plantillas o estilos | `~/.claude/skills/frontend-design/SKILL.md` |
+
+> No hay skill de proyecto para frontend todavia (TBD — se crea cuando el scaffold y el test runner esten decididos en la fase DESIGN).
 
 ## User Skills (escaneados)
 
@@ -28,6 +36,10 @@ Ninguno relevante para el stack Java/Spring (go-testing es de Go, no aplica).
   repository interface), `@WebMvcTest` (web slice), Spring Boot Test + Testcontainers Postgres
   (integración, NO H2).
 - **DB**: PostgreSQL 16, local vía Docker (`docker-compose.yml`), prod Supabase/Neon. Paridad dev/prod.
+
+- **Frontend** (skill global `frontend-design`): Angular SPA con standalone components, greenfield.
+  Aun no scaffoldeado — `ng new` ocurre en la fase APPLY. Test runner TBD (Karma/Jasmine vs Vitest).
+  No aplicar reglas de testing frontend hasta que el scaffold y el test runner esten definidos.
 
 ## Reference docs
 - `docs/arquitectura-backend.md` — estructura de paquetes + reglas de oro
