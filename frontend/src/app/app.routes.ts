@@ -27,6 +27,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/catalog/catalog.component').then((m) => m.CatalogComponent),
   },
+  {
+    path: 'catalog/:id',
+    loadComponent: () =>
+      import('./features/catalog/product-detail.component').then((m) => m.ProductDetailComponent),
+  },
 
   // --- Auth routes (stub) ---
   {

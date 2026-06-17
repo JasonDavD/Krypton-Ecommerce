@@ -79,3 +79,18 @@ export interface PageResponse<T> {
   totalElements: number;
   totalPages: number;
 }
+
+// ---------------------------------------------------------------------------
+// Catalog filter — client-side search state (shared by container + filter component)
+// ---------------------------------------------------------------------------
+
+/** Client-side filter state for the product catalog search. */
+export interface CatalogFilter {
+  name?: string;        // free-text, debounced; omitted from params when empty
+  categoryId?: number;  // from the categories dropdown; omitted when unset
+  priceMin?: number;    // omitted when undefined
+  priceMax?: number;    // omitted when undefined
+}
+
+/** Fallback image when ProductResponse.imageUrl is null. Single source of truth. */
+export const PLACEHOLDER_IMAGE = 'assets/placeholder-product.svg';
