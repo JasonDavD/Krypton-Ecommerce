@@ -7,7 +7,7 @@ import { NotificationService } from '../notifications/notification.service';
 
 /**
  * Functional error interceptor.
- * 401 → AuthService.logout() + router.navigate(['/auth/login'])
+ * 401 → AuthService.logout() + router.navigate(['/cuenta/ingresar'])
  * 403 → notify user ('No tienes permiso...'), re-throw (auth state intact, no redirect)
  * 5xx → re-throw
  * Order: LAST in withInterceptors([authInterceptor, errorInterceptor]).
@@ -21,7 +21,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         authService.logout();
-        router.navigate(['/auth/login']);
+        router.navigate(['/cuenta/ingresar']);
       } else if (error.status === 403) {
         // Surface a user-facing notification; do NOT logout, do NOT redirect to login
         notificationService.notify('No tienes permiso para realizar esta acción', 'error');

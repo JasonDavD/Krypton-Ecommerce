@@ -47,9 +47,9 @@ describe('authGuard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Scenario: Unauthenticated → redirect to /auth/login
+  // Scenario: Unauthenticated → redirect to /cuenta/ingresar
   // -------------------------------------------------------------------------
-  it('should return a UrlTree to /auth/login when user is not authenticated', () => {
+  it('should return a UrlTree to /cuenta/ingresar when user is not authenticated', () => {
     authServiceStub.isAuthenticated.mockReturnValue(false);
     const fakeUrlTree = {} as UrlTree;
     routerSpy.createUrlTree.mockReturnValue(fakeUrlTree);
@@ -59,7 +59,7 @@ describe('authGuard', () => {
       result = authGuard(mockRoute, mockState) as boolean | UrlTree;
     });
 
-    expect(routerSpy.createUrlTree).toHaveBeenCalledWith(['/auth/login']);
+    expect(routerSpy.createUrlTree).toHaveBeenCalledWith(['/cuenta/ingresar']);
     expect(result).toBe(fakeUrlTree);
   });
 });

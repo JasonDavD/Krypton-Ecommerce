@@ -4,7 +4,7 @@ import { AuthService } from '../auth/auth.service';
 
 /**
  * Functional guard that protects admin routes.
- * - Unauthenticated → /auth/login
+ * - Unauthenticated → /cuenta/ingresar
  * - Authenticated but role !== 'ADMIN' → / (home)
  * - role === 'ADMIN' → allow
  *
@@ -16,7 +16,7 @@ export const adminGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (!authService.isAuthenticated()) {
-    return router.createUrlTree(['/auth/login']);
+    return router.createUrlTree(['/cuenta/ingresar']);
   }
 
   if (authService.role() === 'ADMIN') {

@@ -12,13 +12,13 @@ import { AuthService } from '../../core/auth/auth.service';
 
       <div class="navbar__links">
         @if (!authService.isAuthenticated()) {
-          <a routerLink="/auth/login" class="navbar__link">Iniciar sesión</a>
-          <a routerLink="/auth/register" class="navbar__link">Registrarse</a>
+          <a routerLink="/cuenta/ingresar" class="navbar__link">Iniciar sesión</a>
+          <a routerLink="/cuenta/registro" class="navbar__link">Registrarse</a>
         } @else {
           <span class="navbar__user">{{ authService.currentUser()?.email }}</span>
-          <a routerLink="/catalog" class="navbar__link">Catálogo</a>
-          <a routerLink="/cart" class="navbar__link">Carrito</a>
-          <a routerLink="/orders" class="navbar__link">Mis pedidos</a>
+          <a routerLink="/catalogo" class="navbar__link">Catálogo</a>
+          <a routerLink="/carrito" class="navbar__link">Carrito</a>
+          <a routerLink="/pedidos" class="navbar__link">Mis pedidos</a>
           @if (authService.isAdmin()) {
             <a routerLink="/admin" class="navbar__link navbar__link--admin">Admin</a>
           }

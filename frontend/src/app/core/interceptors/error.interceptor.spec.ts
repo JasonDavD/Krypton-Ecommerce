@@ -54,16 +54,16 @@ describe('errorInterceptor', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Scenario: 401 → logout + redirect to /auth/login
+  // Scenario: 401 → logout + redirect to /cuenta/ingresar
   // -------------------------------------------------------------------------
-  it('should call logout and navigate to /auth/login on 401', (done) => {
+  it('should call logout and navigate to /cuenta/ingresar on 401', (done) => {
     const req = new HttpRequest('GET', '/api/orders');
 
     TestBed.runInInjectionContext(() => {
       errorInterceptor(req, makeErrorHandler(401, { error: 'Unauthorized' })).subscribe({
         error: () => {
           expect(authSpy.logout).toHaveBeenCalledTimes(1);
-          expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login']);
+          expect(routerSpy.navigate).toHaveBeenCalledWith(['/cuenta/ingresar']);
           done();
         },
       });
@@ -73,14 +73,14 @@ describe('errorInterceptor', () => {
   // -------------------------------------------------------------------------
   // Scenario: 403 → do NOT logout, do NOT redirect to login
   // -------------------------------------------------------------------------
-  it('should NOT logout and NOT navigate to /auth/login on 403', (done) => {
+  it('should NOT logout and NOT navigate to /cuenta/ingresar on 403', (done) => {
     const req = new HttpRequest('GET', '/api/admin/users');
 
     TestBed.runInInjectionContext(() => {
       errorInterceptor(req, makeErrorHandler(403, { error: 'Forbidden' })).subscribe({
         error: () => {
           expect(authSpy.logout).not.toHaveBeenCalled();
-          expect(routerSpy.navigate).not.toHaveBeenCalledWith(['/auth/login']);
+          expect(routerSpy.navigate).not.toHaveBeenCalledWith(['/cuenta/ingresar']);
           done();
         },
       });
