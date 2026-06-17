@@ -26,7 +26,7 @@ endpoints are `permitAll()` (no auth logic in scope).
 
 ### Requirement: Paginated Product Grid
 
-`/catalog` MUST render a grid of products fetched from `GET /api/products`.
+`/catalogo` MUST render a grid of products fetched from `GET /api/products`.
 Results are server-side paginated using Spring Pageable params.
 Navigation between pages uses explicit page buttons driven by `PageResponse.totalPages`.
 
@@ -36,7 +36,7 @@ Navigation between pages uses explicit page buttons driven by `PageResponse.tota
 
 #### Scenario: Initial load renders first page
 
-- GIVEN a user navigates to `/catalog`
+- GIVEN a user navigates to `/catalogo`
 - WHEN `ProductService` sends `GET /api/products?page=0&size=<default>`
 - THEN the response `PageResponse<ProductResponse>.content` is rendered as a grid of cards
 - AND each card shows at minimum the product name and price
@@ -116,20 +116,20 @@ Changing any filter resets pagination to page 0.
 
 ### Requirement: Product Detail View
 
-`/catalog/:id` MUST render the full detail of one product fetched from
+`/catalogo/:id` MUST render the full detail of one product fetched from
 `GET /api/products/{id}`. The route MUST be a lazy-loaded entry in `app.routes.ts`
 separate from the list route.
 
 #### Scenario: Detail renders product fields
 
-- GIVEN a user navigates to `/catalog/7`
+- GIVEN a user navigates to `/catalogo/7`
 - WHEN `GET /api/products/7` returns a `ProductResponse`
 - THEN the view displays at minimum: product name, price, description, category name, and stock
 - AND `imageUrl` is rendered as an image element (see Req: imageUrl Null Fallback)
 
 #### Scenario: 404 surfaces NotificationService — not a blank page
 
-- GIVEN a user navigates to `/catalog/9999`
+- GIVEN a user navigates to `/catalogo/9999`
 - WHEN `GET /api/products/9999` returns HTTP 404
 - THEN `NotificationService` is called with an error message indicating the product was not found
 - AND the view does NOT crash or render a blank white page (a user-visible not-found
@@ -137,9 +137,9 @@ separate from the list route.
 
 #### Scenario: Back navigation returns to catalog list
 
-- GIVEN a user is on `/catalog/7`
+- GIVEN a user is on `/catalogo/7`
 - WHEN they activate a "back" or "return to catalog" control
-- THEN the router navigates to `/catalog` (the list view)
+- THEN the router navigates to `/catalogo` (the list view)
 
 ---
 
@@ -150,7 +150,7 @@ a visible loading indicator while the HTTP request is in flight.
 
 #### Scenario: List shows loading on initial fetch
 
-- GIVEN `/catalog` has just been navigated to
+- GIVEN `/catalogo` has just been navigated to
 - WHEN the product request is in flight
 - THEN a loading indicator is visible
 - AND no product cards are rendered yet
@@ -163,7 +163,7 @@ a visible loading indicator while the HTTP request is in flight.
 
 #### Scenario: Detail shows loading before response
 
-- GIVEN a user navigates to `/catalog/:id`
+- GIVEN a user navigates to `/catalogo/:id`
 - WHEN the detail request is in flight
 - THEN a loading indicator is visible in the detail view area
 
@@ -238,7 +238,7 @@ product image MUST handle the null case without producing a broken `<img>` tag.
 ### Requirement: Inactive Product Exclusion
 
 Inactive products (`ProductResponse.active === false`) MUST NOT appear in the catalog
-grid or be reachable at `/catalog/:id`.
+grid or be reachable at `/catalogo/:id`.
 
 > **NOTE — Backend-enforced assumption**: This requirement is satisfied by the backend
 > (`GET /api/products` and `GET /api/products/{id}` filter by `active = true`).
@@ -258,21 +258,21 @@ grid or be reachable at `/catalog/:id`.
 
 ### Requirement: Route Registration
 
-`/catalog/:id` MUST be registered as a lazy-loaded route in `app.routes.ts`.
-The existing `/catalog` route MUST continue to work, loading `CatalogComponent`
+`/catalogo/:id` MUST be registered as a lazy-loaded route in `app.routes.ts`.
+The existing `/catalogo` route MUST continue to work, loading `CatalogComponent`
 by the same export name (no rename).
 
-#### Scenario: /catalog route loads the list component
+#### Scenario: /catalogo route loads the list component
 
 - GIVEN `app.routes.ts` is registered
-- WHEN the router resolves `/catalog`
+- WHEN the router resolves `/catalogo`
 - THEN `CatalogComponent` from `features/catalog/catalog.component.ts` is loaded
 - AND no console error about an unmatched route appears
 
-#### Scenario: /catalog/:id route loads the detail component
+#### Scenario: /catalogo/:id route loads the detail component
 
 - GIVEN `app.routes.ts` is registered
-- WHEN the router resolves `/catalog/42`
+- WHEN the router resolves `/catalogo/42`
 - THEN the lazy-loaded detail component for that ID is activated
 - AND no console error about an unmatched route appears
 

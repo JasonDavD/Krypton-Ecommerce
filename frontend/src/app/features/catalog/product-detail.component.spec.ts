@@ -95,9 +95,9 @@ describe('ProductDetailComponent', () => {
       expect(el.textContent).toContain('Producto no encontrado');
     });
 
-    it('renders a back link to /catalog', () => {
+    it('renders a back link to /catalogo', () => {
       const anchor: HTMLAnchorElement = fixture.nativeElement.querySelector('a');
-      expect(anchor?.getAttribute('href')).toBe('/catalog');
+      expect(anchor?.getAttribute('href')).toBe('/catalogo');
     });
 
     it('calls NotificationService.notify with "Producto no encontrado" and "error"', () => {

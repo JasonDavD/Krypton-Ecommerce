@@ -12,7 +12,7 @@ mirrors the `AuthService` shape one-to-one: private writable signals exposed `.a
 `computed()` derived state, `inject(HttpClient)`, **absolute URLs prefixed with `environment.apiBaseUrl`** (e.g.
 `${environment.apiBaseUrl}/api/products`). Server-side pagination
 via Spring `page`/`size`; filters compose into `HttpParams` with empty values omitted. The product
-detail is a routed sibling at `/catalog/:id` that reads the param and calls `getById`. Strict
+detail is a routed sibling at `/catalogo/:id` that reads the param and calls `getById`. Strict
 RED-GREEN Jest on the service HTTP/params logic; pragmatic render tests on the three components.
 
 ### URL strategy (DECISION — overrides the design's first draft; see engram #366)
@@ -110,7 +110,7 @@ service method argument.
 ## Component Tree (container–presentational)
 
 ```
-/catalog                         CatalogComponent           (SMART container)
+/catalogo                        CatalogComponent           (SMART container)
                                    ├── injects ProductService
                                    ├── owns: filter signal, page signal
                                    ├── reads: products(), totalPages(), loading(), error() (from service)
@@ -122,12 +122,12 @@ service method argument.
                                    │
                                    ├── @for product of products()      (grid)
                                    │      <app-product-card [product]="product"/>   (DUMB)
-                                   │          └─ <a [routerLink]="['/catalog', product.id]">
+                                   │          └─ <a [routerLink]="['/catalogo', product.id]">
                                    │          └─ <img [src]="product.imageUrl ?? PLACEHOLDER_IMAGE">
                                    │
                                    └── pagination buttons → onPageChange(n)
 
-/catalog/:id                     ProductDetailComponent     (SMART, routed sibling)
+/catalogo/:id                    ProductDetailComponent     (SMART, routed sibling)
                                    ├── injects ProductService + ActivatedRoute
                                    ├── reads :id param, calls getById(id)
                                    └── loading / loaded / 404 states
@@ -255,14 +255,14 @@ second call `expectNone`).
 and price changes emit immediately. The container never sees per-keystroke events. This keeps the
 service free of timing concerns — it is purely a synchronous request builder (clean to strict-test).
 
-## Routing — adding `/catalog/:id`
+## Routing — adding `/catalogo/:id`
 
-Add a sibling lazy route in `app.routes.ts` immediately after the existing `catalog` route. Keep the
+Add a sibling lazy route in `app.routes.ts` immediately after the existing `catalogo` route. Keep the
 `CatalogComponent` export name untouched (explore risk #6):
 
 ```ts
 {
-  path: 'catalog/:id',
+  path: 'catalogo/:id',
   loadComponent: () =>
     import('./features/catalog/product-detail.component').then((m) => m.ProductDetailComponent),
 },
@@ -289,7 +289,7 @@ finite before calling; a non-numeric id short-circuits to the not-found view wit
 | Empty (list) | `loading()` false AND `products().length === 0` AND no error | "No se encontraron productos" message | — |
 | Error (list) | `search()` GET fails (5xx) | inline error block + retry affordance | `notify('No se pudieron cargar los productos', 'error')` |
 | Loading (detail) | before `getById` resolves | "Cargando..." | — |
-| 404 (detail) | `getById` returns 404 (inactive/missing product) | "Producto no encontrado" + link back to `/catalog` | `notify('Producto no encontrado', 'error')` |
+| 404 (detail) | `getById` returns 404 (inactive/missing product) | "Producto no encontrado" + link back to `/catalogo` | `notify('Producto no encontrado', 'error')` |
 | Other error (detail) | non-404 failure | generic error view | `notify('No se pudo cargar el producto', 'error')` |
 
 `errorInterceptor` already handles 401/403 globally; the catalog layer handles 404 (detail) and 5xx
@@ -328,9 +328,9 @@ the single source of truth referenced by both card and detail.
 | `frontend/src/app/features/catalog/product-card.component.spec.ts` | Create | Pragmatic render test |
 | `frontend/src/app/features/catalog/catalog-filter.component.ts` | Create | Presentational; `@Output() filterChange`; internal name debounce |
 | `frontend/src/app/features/catalog/catalog-filter.component.spec.ts` | Create | Pragmatic render test (debounce emit) |
-| `frontend/src/app/features/catalog/product-detail.component.ts` | Create | Routed at `/catalog/:id`; reads param; 404 handling |
+| `frontend/src/app/features/catalog/product-detail.component.ts` | Create | Routed at `/catalogo/:id`; reads param; 404 handling |
 | `frontend/src/app/features/catalog/product-detail.component.spec.ts` | Create | Pragmatic render test (loaded / 404 branches) |
-| `frontend/src/app/app.routes.ts` | Modify | Add `catalog/:id` lazy route |
+| `frontend/src/app/app.routes.ts` | Modify | Add `catalogo/:id` lazy route |
 | `frontend/src/app/models/product.model.ts` | Modify | Add `CatalogFilter` interface + `PLACEHOLDER_IMAGE` constant |
 | `frontend/src/assets/placeholder-product.svg` | Create | Static fallback image |
 
@@ -358,7 +358,7 @@ Pure logic over `HttpTestingController` (mirrors `auth.service.spec.ts`):
 ### Pragmatic render tests (critical branches only)
 
 - `product-card.component.spec.ts` — renders name/price from `@Input() product`; `imageUrl: null` ⇒
-  `<img>` src resolves to `PLACEHOLDER_IMAGE` (NOT `null`); routerLink targets `/catalog/{id}`.
+  `<img>` src resolves to `PLACEHOLDER_IMAGE` (NOT `null`); routerLink targets `/catalogo/{id}`.
 - `catalog-filter.component.spec.ts` — emits `filterChange` with the composed `CatalogFilter`; name
   input is debounced (use `fakeAsync` + `tick(300)` to assert a single emission after rapid keystrokes).
 - `product-detail.component.spec.ts` — loaded branch renders the product; 404 branch renders
@@ -373,7 +373,7 @@ Components get NO strict RED-GREEN — DOM + change detection friction outweighs
 
 No migration, frontend-only, no backend touch (explore confirmed all three endpoints `permitAll()`).
 Rollback = revert the new `features/catalog/*` files, the `product.model.ts` additions, the
-`placeholder-product.svg`, and the `catalog/:id` route line; the original `CatalogComponent` stub
+`placeholder-product.svg`, and the `catalogo/:id` route line; the original `CatalogComponent` stub
 returns from git history. Nothing else imports the new files.
 
 ## Open Questions

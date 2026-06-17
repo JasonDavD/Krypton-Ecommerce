@@ -72,11 +72,11 @@ describe('ProductCardComponent', () => {
   });
 
   describe('routerLink', () => {
-    it('root anchor targets /catalog/{id}', () => {
+    it('root anchor targets /catalogo/{id}', () => {
       setup(makeProduct({ id: 42 }));
       const anchor: HTMLAnchorElement = fixture.nativeElement.querySelector('a');
-      // RouterTestingModule resolves the routerLink — the href will contain /catalog/42
-      expect(anchor.getAttribute('href')).toBe('/catalog/42');
+      // RouterTestingModule resolves the routerLink — the href will contain /catalogo/42
+      expect(anchor.getAttribute('href')).toBe('/catalogo/42');
     });
   });
 });

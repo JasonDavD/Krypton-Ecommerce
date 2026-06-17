@@ -119,8 +119,8 @@ export const PLACEHOLDER_IMAGE = 'assets/placeholder-product.svg';
 - `frontend/src/app/features/catalog/product-card.component.spec.ts` (CREATE)
 
 **Action**:
-1. Standalone `ProductCardComponent` (`app-product-card`): `@Input() product!: ProductResponse`. Root element is `<a [routerLink]="['/catalog', product.id]">` (no `Router` injection — template concern). Image: `<img [src]="product.imageUrl ?? PLACEHOLDER_IMAGE" [alt]="product.name">`. Renders name and price.
-2. Spec (pragmatic render): `imageUrl: null` → `<img>` src equals `PLACEHOLDER_IMAGE`, NOT `'null'`; `routerLink` attribute targets `/catalog/{id}`; name is displayed in the rendered DOM.
+1. Standalone `ProductCardComponent` (`app-product-card`): `@Input() product!: ProductResponse`. Root element is `<a [routerLink]="['/catalogo', product.id]">` (no `Router` injection — template concern). Image: `<img [src]="product.imageUrl ?? PLACEHOLDER_IMAGE" [alt]="product.name">`. Renders name and price.
+2. Spec (pragmatic render): `imageUrl: null` → `<img>` src equals `PLACEHOLDER_IMAGE`, NOT `'null'`; `routerLink` attribute targets `/catalogo/{id}`; name is displayed in the rendered DOM.
 
 **Done when**: `npm test` passes card spec. No strict RED-GREEN sequence required.
 **Depends on**: P2.2 (ProductResponse shape confirmed green).
@@ -161,7 +161,7 @@ export const PLACEHOLDER_IMAGE = 'assets/placeholder-product.svg';
 - `onPageChange(n: number)`: set page to n, `runSearch()`.
 - Template covers: `@if (productService.loading())` spinner; `@else if (!products.length && !error)` empty state "No se encontraron productos"; `@else if (error)` error block; `@for` grid of `<app-product-card [product]="p">`;`<app-catalog-filter [categories]="categories()" (filterChange)="onFilterChange($event)">`;pagination buttons driven by `productService.totalPages()`.
 
-**Done when**: Component compiles; existing `/catalog` route still resolves `CatalogComponent` by name; `tsc --noEmit` clean.
+**Done when**: Component compiles; existing `/catalogo` route still resolves `CatalogComponent` by name; `tsc --noEmit` clean.
 **Depends on**: P3.1, P3.2 (child component selectors must exist to compile template).
 
 ### [x] P4.2 — `ProductDetailComponent` + pragmatic spec
@@ -172,26 +172,26 @@ export const PLACEHOLDER_IMAGE = 'assets/placeholder-product.svg';
 - `frontend/src/app/features/catalog/product-detail.component.spec.ts` (CREATE)
 
 **Action**:
-1. Standalone `ProductDetailComponent` (`app-product-detail`): injects `ProductService` + `ActivatedRoute`. `ngOnInit`: `const id = Number(route.snapshot.paramMap.get('id'))`. Validate `isFinite(id)` before HTTP — non-numeric id shows not-found view without making a call. `getById(id).subscribe({ next: set product, error: handle })`. `error` handler: `err.status === 404` → "Producto no encontrado" + `NotificationService.notify('Producto no encontrado', 'error')`; else generic + `notify('No se pudo cargar el producto', 'error')`. Template: loading state "Cargando..."; loaded state (name, price, description, categoryName, stock, `imageUrl ?? PLACEHOLDER_IMAGE`); 404 state with back link to `/catalog`; generic error state.
+1. Standalone `ProductDetailComponent` (`app-product-detail`): injects `ProductService` + `ActivatedRoute`. `ngOnInit`: `const id = Number(route.snapshot.paramMap.get('id'))`. Validate `isFinite(id)` before HTTP — non-numeric id shows not-found view without making a call. `getById(id).subscribe({ next: set product, error: handle })`. `error` handler: `err.status === 404` → "Producto no encontrado" + `NotificationService.notify('Producto no encontrado', 'error')`; else generic + `notify('No se pudo cargar el producto', 'error')`. Template: loading state "Cargando..."; loaded state (name, price, description, categoryName, stock, `imageUrl ?? PLACEHOLDER_IMAGE`); 404 state with back link to `/catalogo`; generic error state.
 2. Spec (pragmatic): loaded branch renders product name/price; 404 branch renders "Producto no encontrado" and calls `NotificationService.notify`; back link present on 404 branch. Mock `ActivatedRoute` + `ProductService.getById`.
 
 **Done when**: `npm test` passes detail spec.
 **Depends on**: P2.2 (`ProductService.getById`).
 **Parallel with**: P4.1 (independent file — P4.1 and P4.2 both depend on P2.2; P4.2 does NOT depend on P3.x).
 
-### [x] P4.3 — Add `catalog/:id` lazy route to `app.routes.ts`
-**Spec**: Route Registration — `/catalog/:id` lazy-loaded; `CatalogComponent` export name unchanged
-**Design**: Routing section — sibling lazy route added immediately after the `catalog` route entry
+### [x] P4.3 — Add `catalogo/:id` lazy route to `app.routes.ts`
+**Spec**: Route Registration — `/catalogo/:id` lazy-loaded; `CatalogComponent` export name unchanged
+**Design**: Routing section — sibling lazy route added immediately after the `catalogo` route entry
 **Files**: `frontend/src/app/app.routes.ts` (MODIFY)
-**Action**: Insert after the `{ path: 'catalog', loadComponent: ... }` block:
+**Action**: Insert after the `{ path: 'catalogo', loadComponent: ... }` block:
 ```ts
 {
-  path: 'catalog/:id',
+  path: 'catalogo/:id',
   loadComponent: () =>
     import('./features/catalog/product-detail.component').then((m) => m.ProductDetailComponent),
 },
 ```
-**Done when**: `tsc --noEmit` clean; Angular router resolves `/catalog/1` to `ProductDetailComponent`.
+**Done when**: `tsc --noEmit` clean; Angular router resolves `/catalogo/1` to `ProductDetailComponent`.
 **Depends on**: P4.2 (`ProductDetailComponent` file must exist for the import to type-check).
 
 ### [x] P4.4 — `CatalogComponent` pragmatic render spec (optional)
@@ -214,7 +214,7 @@ export const PLACEHOLDER_IMAGE = 'assets/placeholder-product.svg';
 **Done when**: `npm test` exits 0, zero failures.
 
 ### [ ] P5.2 — Live smoke: catalog list loads from backend
-**Action**: Start both servers. Navigate to `http://localhost:4200/catalog`. Network tab must show `GET http://localhost:8080/api/products?page=0&size=12` returning 200 with correct CORS headers. Loading indicator appears then disappears. Pagination buttons match `totalPages`.
+**Action**: Start both servers. Navigate to `http://localhost:4200/catalogo`. Network tab must show `GET http://localhost:8080/api/products?page=0&size=12` returning 200 with correct CORS headers. Loading indicator appears then disappears. Pagination buttons match `totalPages`.
 **Done when**: No CORS errors; products grid renders real data.
 
 ### [ ] P5.3 — Live smoke: filters work end-to-end
@@ -222,7 +222,7 @@ export const PLACEHOLDER_IMAGE = 'assets/placeholder-product.svg';
 **Done when**: Network tab confirms debounced single request with correct lowercase params.
 
 ### [ ] P5.4 — Live smoke: product detail and 404 handling
-**Action**: Click a product card → `/catalog/{id}` loads with all fields rendered. Navigate to `/catalog/99999` → "Producto no encontrado" message + notification appear; no blank page.
+**Action**: Click a product card → `/catalogo/{id}` loads with all fields rendered. Navigate to `/catalogo/99999` → "Producto no encontrado" message + notification appear; no blank page.
 **Done when**: Both happy-path and 404 branches confirmed in browser.
 
 ### [ ] P5.5 — Live smoke: null imageUrl placeholder renders

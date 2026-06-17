@@ -69,9 +69,9 @@ describe('adminGuard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Scenario: unauthenticated → redirect to /auth/login
+  // Scenario: unauthenticated → redirect to /cuenta/ingresar
   // -------------------------------------------------------------------------
-  it('should redirect to /auth/login when user is not authenticated', () => {
+  it('should redirect to /cuenta/ingresar when user is not authenticated', () => {
     authServiceStub.isAuthenticated.mockReturnValue(false);
     authServiceStub.role.mockReturnValue(null);
     const fakeUrlTree = {} as UrlTree;
@@ -82,7 +82,7 @@ describe('adminGuard', () => {
       result = adminGuard(mockRoute, mockState) as boolean | UrlTree;
     });
 
-    expect(routerSpy.createUrlTree).toHaveBeenCalledWith(['/auth/login']);
+    expect(routerSpy.createUrlTree).toHaveBeenCalledWith(['/cuenta/ingresar']);
     expect(result).toBe(fakeUrlTree);
   });
 

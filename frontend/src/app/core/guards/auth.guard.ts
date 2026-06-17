@@ -4,7 +4,7 @@ import { AuthService } from '../auth/auth.service';
 
 /**
  * Functional guard that protects routes requiring authentication.
- * Unauthenticated users are redirected to /auth/login.
+ * Unauthenticated users are redirected to /cuenta/ingresar.
  */
 export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -13,5 +13,5 @@ export const authGuard: CanActivateFn = () => {
   if (authService.isAuthenticated()) {
     return true;
   }
-  return router.createUrlTree(['/auth/login']);
+  return router.createUrlTree(['/cuenta/ingresar']);
 };

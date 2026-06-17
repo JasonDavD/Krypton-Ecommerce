@@ -36,12 +36,12 @@ type ViewState = 'loading' | 'loaded' | 'not-found' | 'error';
     } @else if (state === 'not-found') {
       <div class="detail__not-found">
         <p>Producto no encontrado</p>
-        <a routerLink="/catalog" class="detail__back">Volver al catálogo</a>
+        <a routerLink="/catalogo" class="detail__back">Volver al catálogo</a>
       </div>
     } @else {
       <div class="detail__error">
         <p>No se pudo cargar el producto</p>
-        <a routerLink="/catalog" class="detail__back">Volver al catálogo</a>
+        <a routerLink="/catalogo" class="detail__back">Volver al catálogo</a>
       </div>
     }
   `,

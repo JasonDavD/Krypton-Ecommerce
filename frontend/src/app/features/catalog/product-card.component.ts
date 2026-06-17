@@ -9,7 +9,7 @@ import { PLACEHOLDER_IMAGE } from '../../models/product.model';
   standalone: true,
   imports: [RouterLink, CurrencyPipe],
   template: `
-    <a [routerLink]="['/catalog', product.id]" class="product-card">
+    <a [routerLink]="['/catalogo', product.id]" class="product-card">
       <img
         [src]="product.imageUrl ?? PLACEHOLDER_IMAGE"
         [alt]="product.name"

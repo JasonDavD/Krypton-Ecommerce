@@ -10,46 +10,46 @@ import { adminGuard } from './core/guards/admin.guard';
  * touching any sibling route declarations.
  *
  * Guard policy:
- *   - /cart, /orders  → authGuard  (any authenticated user)
- *   - /admin, /reports → adminGuard (ADMIN role only)
- *   - /catalog, /auth/** → public
+ *   - /carrito, /pedidos  → authGuard  (any authenticated user)
+ *   - /admin, /reportes → adminGuard (ADMIN role only)
+ *   - /catalogo, /cuenta/** → public
  */
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'catalog',
+    redirectTo: 'catalogo',
     pathMatch: 'full',
   },
 
   // --- Public routes ---
   {
-    path: 'catalog',
+    path: 'catalogo',
     loadComponent: () =>
       import('./features/catalog/catalog.component').then((m) => m.CatalogComponent),
   },
   {
-    path: 'catalog/:id',
+    path: 'catalogo/:id',
     loadComponent: () =>
       import('./features/catalog/product-detail.component').then((m) => m.ProductDetailComponent),
   },
 
   // --- Auth routes (stub) ---
   {
-    path: 'auth',
+    path: 'cuenta',
     children: [
       {
-        path: 'login',
+        path: 'ingresar',
         loadComponent: () =>
           import('./features/auth/login.component').then((m) => m.LoginComponent),
       },
       {
-        path: 'register',
+        path: 'registro',
         loadComponent: () =>
           import('./features/auth/register.component').then((m) => m.RegisterComponent),
       },
       {
         path: '',
-        redirectTo: 'login',
+        redirectTo: 'ingresar',
         pathMatch: 'full',
       },
     ],
@@ -57,13 +57,13 @@ export const routes: Routes = [
 
   // --- Authenticated routes ---
   {
-    path: 'cart',
+    path: 'carrito',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/cart/cart.component').then((m) => m.CartComponent),
   },
   {
-    path: 'orders',
+    path: 'pedidos',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/orders/orders.component').then((m) => m.OrdersComponent),
@@ -77,7 +77,7 @@ export const routes: Routes = [
       import('./features/admin/admin.component').then((m) => m.AdminComponent),
   },
   {
-    path: 'reports',
+    path: 'reportes',
     canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/reports/reports.component').then((m) => m.ReportsComponent),
@@ -86,6 +86,6 @@ export const routes: Routes = [
   // --- Fallback ---
   {
     path: '**',
-    redirectTo: 'catalog',
+    redirectTo: 'catalogo',
   },
 ];
