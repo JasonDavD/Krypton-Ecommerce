@@ -12,6 +12,10 @@ spring:
         format_sql: true
   flyway:
     enabled: true                 # aplica las migraciones pendientes al arrancar
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
 
 # Configuración de la app (JWT). El secreto real va por env JWT_SECRET en prod.
 # El default es SOLO para desarrollo (≥32 bytes que exige HS256). NO usar en prod.
@@ -19,6 +23,9 @@ app:
   jwt:
     secret: ${JWT_SECRET:dev-only-change-me-krypton-secret-key-1234567890}
     expiration: 86400000          # 24h en milisegundos
+  uploads:
+    dir: ${APP_UPLOADS_DIR:./uploads}
+    base-url: ${APP_UPLOADS_BASE_URL:http://localhost:8080}
 
 ---
 spring:

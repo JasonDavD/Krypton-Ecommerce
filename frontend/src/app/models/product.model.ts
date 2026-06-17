@@ -43,6 +43,18 @@ export interface ProductRequest {
   categoryId: number;
 }
 
+/**
+ * Image entry in a product's gallery.
+ * Mirrors backend ProductImageResponse record (id, url, displayOrder, cover).
+ */
+export interface ProductImageResponse {
+  id: number;
+  /** Full serving URL: base-url + /api/uploads/images/{filename} */
+  url: string;
+  displayOrder: number;
+  cover: boolean;
+}
+
 export interface ProductResponse {
   id: number;
   sku: string;
@@ -60,6 +72,8 @@ export interface ProductResponse {
   active: boolean;
   categoryId: number;
   categoryName: string;
+  /** Gallery images, ordered by displayOrder ASC. Absent on list endpoints (NON_NULL). */
+  images?: ProductImageResponse[];
 }
 
 // ---------------------------------------------------------------------------

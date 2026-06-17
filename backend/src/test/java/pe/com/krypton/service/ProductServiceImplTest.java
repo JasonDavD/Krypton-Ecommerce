@@ -23,7 +23,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import pe.com.krypton.dto.request.ProductRequest;
 import pe.com.krypton.dto.response.PageResponse;
+import pe.com.krypton.dto.response.ProductImageResponse;
 import pe.com.krypton.dto.response.ProductResponse;
+import pe.com.krypton.model.ProductImage;
 import pe.com.krypton.exception.DuplicateSkuException;
 import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.mapper.ProductMapper;
@@ -47,7 +49,7 @@ class ProductServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new ProductServiceImpl(productRepository, categoryRepository, new ProductMapper());
+        service = new ProductServiceImpl(productRepository, categoryRepository, new ProductMapper("http://localhost:8080"));
     }
 
     // ─── helpers ────────────────────────────────────────────────────────────────
@@ -107,6 +109,54 @@ class ProductServiceImplTest {
 
         assertThat(result.id()).isEqualTo(1L);
         assertThat(result.sku()).isEqualTo("SKU-001");
+    }
+
+    @Test
+    void getById_should_return_images_ordered_by_displayOrder() {
+        Product p = product(1L, "SKU-001", true);
+
+        ProductImage img1 = new ProductImage();
+        img1.setId(10L);
+        img1.setPath("a.jpg");
+        img1.setDisplayOrder((short) 0);
+        img1.setCover(true);
+        img1.setProduct(p);
+
+        ProductImage img2 = new ProductImage();
+        img2.setId(11L);
+        img2.setPath("b.jpg");
+        img2.setDisplayOrder((short) 1);
+        img2.setCover(false);
+        img2.setProduct(p);
+
+        p.getImages().add(img1);
+        p.getImages().add(img2);
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(p));
+
+        ProductResponse result = service.getById(1L);
+
+        assertThat(result.images()).isNotNull();
+        assertThat(result.images()).hasSize(2);
+        assertThat(result.images().get(0).id()).isEqualTo(10L);
+        assertThat(result.images().get(0).cover()).isTrue();
+        assertThat(result.images().get(0).url()).startsWith("http://localhost:8080");
+        assertThat(result.images().get(1).id()).isEqualTo(11L);
+        assertThat(result.images().get(1).cover()).isFalse();
+    }
+
+    @Test
+    void search_should_return_products_without_images_field() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Product p = product(1L, "SKU-001", true);
+        Page<Product> page = new PageImpl<>(List.of(p), pageable, 1);
+        when(productRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+
+        PageResponse<ProductResponse> result = service.search(null, null, null, null, pageable);
+
+        assertThat(result.content()).hasSize(1);
+        // images field must be null (lean mapping) so @JsonInclude(NON_NULL) omits it in JSON
+        assertThat(result.content().get(0).images()).isNull();
     }
 
     @Test

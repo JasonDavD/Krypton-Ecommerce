@@ -5,11 +5,19 @@ import { of, throwError } from 'rxjs';
 import { ProductDetailComponent } from './product-detail.component';
 import { ProductService } from './product.service';
 import { NotificationService } from '../../core/notifications/notification.service';
-import { ProductResponse } from '../../models/product.model';
+import { ProductResponse, ProductImageResponse } from '../../models/product.model';
+import { PLACEHOLDER_IMAGE } from '../../models/product.model';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+const makeImage = (id: number, order: number, cover = false): ProductImageResponse => ({
+  id,
+  url: `https://cdn.example.com/img${id}.jpg`,
+  displayOrder: order,
+  cover,
+});
 
 const makeProduct = (overrides: Partial<ProductResponse> = {}): ProductResponse => ({
   id: 7,
@@ -128,6 +136,122 @@ describe('ProductDetailComponent', () => {
 
     it('shows not-found state without making an HTTP call', () => {
       expect(component.state).toBe('not-found');
+    });
+  });
+
+  // ─── Carousel tests (D2: next on last → first; prev on first → last) ──────
+
+  describe('carousel — empty images falls back to imageUrl', () => {
+    beforeEach(async () => {
+      // Product has no images array (absent) — must fall back to imageUrl
+      await configure('7', of(makeProduct({ images: undefined })));
+    });
+
+    it('shows the imageUrl as the fallback src', () => {
+      const img: HTMLImageElement | null = fixture.nativeElement.querySelector('img');
+      expect(img?.src).toBe('https://example.com/headphones.jpg');
+    });
+
+    it('does NOT render navigation controls', () => {
+      const prevBtn = fixture.nativeElement.querySelector('[data-testid="prev"]');
+      const nextBtn = fixture.nativeElement.querySelector('[data-testid="next"]');
+      expect(prevBtn).toBeNull();
+      expect(nextBtn).toBeNull();
+    });
+  });
+
+  describe('carousel — empty images array falls back to PLACEHOLDER_IMAGE', () => {
+    beforeEach(async () => {
+      // Product has empty images array and no imageUrl
+      await configure('7', of(makeProduct({ images: [], imageUrl: null })));
+    });
+
+    it('shows the placeholder image when images is empty and imageUrl is null', () => {
+      const img: HTMLImageElement | null = fixture.nativeElement.querySelector('img');
+      expect(img?.src).toContain('placeholder-product.svg');
+    });
+  });
+
+  describe('carousel — single image', () => {
+    const singleImage = makeImage(1, 0, true);
+
+    beforeEach(async () => {
+      await configure('7', of(makeProduct({ images: [singleImage] })));
+    });
+
+    it('renders the image src from images[0].url', () => {
+      const img: HTMLImageElement | null = fixture.nativeElement.querySelector('img');
+      expect(img?.src).toBe(singleImage.url);
+    });
+
+    it('does NOT render navigation controls for a single image', () => {
+      const prevBtn = fixture.nativeElement.querySelector('[data-testid="prev"]');
+      const nextBtn = fixture.nativeElement.querySelector('[data-testid="next"]');
+      expect(prevBtn).toBeNull();
+      expect(nextBtn).toBeNull();
+    });
+  });
+
+  describe('carousel — multiple images with wrap-around (D2)', () => {
+    const images = [
+      makeImage(1, 0, true),
+      makeImage(2, 1, false),
+      makeImage(3, 2, false),
+    ];
+
+    beforeEach(async () => {
+      await configure('7', of(makeProduct({ images })));
+    });
+
+    it('starts at index 0 (first image)', () => {
+      const img: HTMLImageElement | null = fixture.nativeElement.querySelector('img');
+      expect(img?.src).toBe(images[0].url);
+    });
+
+    it('renders prev and next navigation controls', () => {
+      const prevBtn = fixture.nativeElement.querySelector('[data-testid="prev"]');
+      const nextBtn = fixture.nativeElement.querySelector('[data-testid="next"]');
+      expect(prevBtn).not.toBeNull();
+      expect(nextBtn).not.toBeNull();
+    });
+
+    it('next() advances to the second image', () => {
+      component.next();
+      fixture.detectChanges();
+      const img: HTMLImageElement | null = fixture.nativeElement.querySelector('img');
+      expect(img?.src).toBe(images[1].url);
+    });
+
+    it('next() on the last image wraps to the first (D2)', () => {
+      // Advance to last image
+      component.next();
+      component.next();
+      fixture.detectChanges();
+      const imgAtLast: HTMLImageElement | null = fixture.nativeElement.querySelector('img');
+      expect(imgAtLast?.src).toBe(images[2].url);
+
+      // One more next: should wrap to first
+      component.next();
+      fixture.detectChanges();
+      const imgWrapped: HTMLImageElement | null = fixture.nativeElement.querySelector('img');
+      expect(imgWrapped?.src).toBe(images[0].url);
+    });
+
+    it('prev() on the first image wraps to the last (D2)', () => {
+      // At index 0 — prev should go to last
+      component.prev();
+      fixture.detectChanges();
+      const img: HTMLImageElement | null = fixture.nativeElement.querySelector('img');
+      expect(img?.src).toBe(images[images.length - 1].url);
+    });
+
+    it('prev() from a middle image goes back one', () => {
+      component.next(); // index 1
+      fixture.detectChanges();
+      component.prev(); // back to 0
+      fixture.detectChanges();
+      const img: HTMLImageElement | null = fixture.nativeElement.querySelector('img');
+      expect(img?.src).toBe(images[0].url);
     });
   });
 });
