@@ -75,7 +75,7 @@ describe('AuthService', () => {
     it('should POST to /api/auth/login with credentials', () => {
       const creds: LoginRequest = { email: 'admin@test.com', password: 'pass' };
       service.login(creds).subscribe();
-      const req = http.expectOne('/api/auth/login');
+      const req = http.expectOne('http://localhost:8080/api/auth/login');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(creds);
       req.flush(AUTH_RESPONSE_ADMIN);
@@ -83,13 +83,13 @@ describe('AuthService', () => {
 
     it('should persist token to localStorage on success', () => {
       service.login({ email: 'admin@test.com', password: 'pass' }).subscribe();
-      http.expectOne('/api/auth/login').flush(AUTH_RESPONSE_ADMIN);
+      http.expectOne('http://localhost:8080/api/auth/login').flush(AUTH_RESPONSE_ADMIN);
       expect(localStorage.getItem('token')).toBe(TOKEN_ADMIN);
     });
 
     it('should set currentUser signal from decoded JWT (ADMIN)', () => {
       service.login({ email: 'admin@test.com', password: 'pass' }).subscribe();
-      http.expectOne('/api/auth/login').flush(AUTH_RESPONSE_ADMIN);
+      http.expectOne('http://localhost:8080/api/auth/login').flush(AUTH_RESPONSE_ADMIN);
       const user = service.currentUser();
       expect(user).not.toBeNull();
       expect(user?.email).toBe('admin@test.com');
@@ -97,7 +97,7 @@ describe('AuthService', () => {
 
     it('should set role signal to ADMIN', () => {
       service.login({ email: 'admin@test.com', password: 'pass' }).subscribe();
-      http.expectOne('/api/auth/login').flush(AUTH_RESPONSE_ADMIN);
+      http.expectOne('http://localhost:8080/api/auth/login').flush(AUTH_RESPONSE_ADMIN);
       expect(service.role()).toBe('ADMIN');
       expect(service.isAdmin()).toBe(true);
       expect(service.isAuthenticated()).toBe(true);
@@ -105,7 +105,7 @@ describe('AuthService', () => {
 
     it('should set role signal to CLIENTE', () => {
       service.login({ email: 'user@test.com', password: 'pass' }).subscribe();
-      http.expectOne('/api/auth/login').flush(AUTH_RESPONSE_CLIENTE);
+      http.expectOne('http://localhost:8080/api/auth/login').flush(AUTH_RESPONSE_CLIENTE);
       expect(service.role()).toBe('CLIENTE');
       expect(service.isAdmin()).toBe(false);
     });
@@ -115,7 +115,7 @@ describe('AuthService', () => {
       service.login({ email: 'bad@test.com', password: 'wrong' }).subscribe({
         error: (e) => (error = e),
       });
-      http.expectOne('/api/auth/login').flush({ error: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+      http.expectOne('http://localhost:8080/api/auth/login').flush({ error: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
       expect(localStorage.getItem('token')).toBeNull();
       expect(service.currentUser()).toBeNull();
       expect(error).toBeDefined();
@@ -131,12 +131,12 @@ describe('AuthService', () => {
       const payload: RegisterRequest = { name: 'New', email: 'user@test.com', password: 'pass' };
       service.register(payload).subscribe();
 
-      const regReq = http.expectOne('/api/auth/register');
+      const regReq = http.expectOne('http://localhost:8080/api/auth/register');
       expect(regReq.request.method).toBe('POST');
       expect(regReq.request.body).toEqual(payload);
       regReq.flush(USER_RESPONSE);
 
-      const loginReq = http.expectOne('/api/auth/login');
+      const loginReq = http.expectOne('http://localhost:8080/api/auth/login');
       expect(loginReq.request.method).toBe('POST');
       loginReq.flush(AUTH_RESPONSE_CLIENTE);
     });
@@ -145,8 +145,8 @@ describe('AuthService', () => {
       const payload: RegisterRequest = { name: 'New', email: 'user@test.com', password: 'pass' };
       service.register(payload).subscribe();
 
-      http.expectOne('/api/auth/register').flush(USER_RESPONSE);
-      http.expectOne('/api/auth/login').flush(AUTH_RESPONSE_CLIENTE);
+      http.expectOne('http://localhost:8080/api/auth/register').flush(USER_RESPONSE);
+      http.expectOne('http://localhost:8080/api/auth/login').flush(AUTH_RESPONSE_CLIENTE);
 
       expect(localStorage.getItem('token')).toBe(TOKEN_CLIENTE);
       expect(service.currentUser()?.email).toBe('user@test.com');
@@ -158,8 +158,8 @@ describe('AuthService', () => {
       service.register({ name: 'X', email: 'dup@test.com', password: 'pass' }).subscribe({
         error: (e) => (error = e),
       });
-      http.expectOne('/api/auth/register').flush({ error: 'Conflict' }, { status: 409, statusText: 'Conflict' });
-      http.expectNone('/api/auth/login');
+      http.expectOne('http://localhost:8080/api/auth/register').flush({ error: 'Conflict' }, { status: 409, statusText: 'Conflict' });
+      http.expectNone('http://localhost:8080/api/auth/login');
       expect(localStorage.getItem('token')).toBeNull();
       expect(error).toBeDefined();
     });
@@ -172,7 +172,7 @@ describe('AuthService', () => {
   describe('logout()', () => {
     it('should clear token from localStorage and reset signals', () => {
       service.login({ email: 'admin@test.com', password: 'pass' }).subscribe();
-      http.expectOne('/api/auth/login').flush(AUTH_RESPONSE_ADMIN);
+      http.expectOne('http://localhost:8080/api/auth/login').flush(AUTH_RESPONSE_ADMIN);
 
       service.logout();
 

@@ -9,6 +9,7 @@ import {
   Role,
   UserResponse,
 } from '../../models/auth.model';
+import { environment } from '../../../environments/environment';
 
 // ---------------------------------------------------------------------------
 // Internal JWT payload shape (what we decode from the token)
@@ -34,8 +35,8 @@ interface AuthenticatedUser {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly TOKEN_KEY = 'token';
-  private readonly LOGIN_URL = '/api/auth/login';
-  private readonly REGISTER_URL = '/api/auth/register';
+  private readonly LOGIN_URL = `${environment.apiBaseUrl}/api/auth/login`;
+  private readonly REGISTER_URL = `${environment.apiBaseUrl}/api/auth/register`;
 
   // Private writable signals
   private readonly _currentUser = signal<AuthenticatedUser | null>(null);
