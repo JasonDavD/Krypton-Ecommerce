@@ -1,18 +1,14 @@
 import { Component } from '@angular/core';
+import { AuthFormComponent } from './auth-form.component';
 
 /**
- * Stub component for /auth/login.
- * Replace this component with the real implementation in the auth feature change.
- * Do NOT rename the export — app.routes.ts references this via loadComponent.
+ * /cuenta/ingresar — referenced by app.routes.ts via loadComponent.
+ * Do NOT rename the export.
  */
 @Component({
   selector: 'app-login',
   standalone: true,
-  template: `
-    <section>
-      <h2>Iniciar sesión</h2>
-      <p>Próximamente — formulario de login en desarrollo.</p>
-    </section>
-  `,
+  imports: [AuthFormComponent],
+  template: `<app-auth-form mode="login"></app-auth-form>`,
 })
 export class LoginComponent {}

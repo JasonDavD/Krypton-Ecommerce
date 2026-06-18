@@ -1,18 +1,14 @@
 import { Component } from '@angular/core';
+import { AuthFormComponent } from './auth-form.component';
 
 /**
- * Stub component for /auth/register.
- * Replace this component with the real implementation in the auth feature change.
- * Do NOT rename the export — app.routes.ts references this via loadComponent.
+ * /cuenta/registro — referenced by app.routes.ts via loadComponent.
+ * Do NOT rename the export.
  */
 @Component({
   selector: 'app-register',
   standalone: true,
-  template: `
-    <section>
-      <h2>Registrarse</h2>
-      <p>Próximamente — formulario de registro en desarrollo.</p>
-    </section>
-  `,
+  imports: [AuthFormComponent],
+  template: `<app-auth-form mode="register"></app-auth-form>`,
 })
 export class RegisterComponent {}
