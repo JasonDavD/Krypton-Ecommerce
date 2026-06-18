@@ -1,4 +1,5 @@
 import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ProductService } from './product.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { ProductCardComponent } from './product-card.component';
@@ -139,6 +140,7 @@ import { CatalogFilter, CategoryResponse } from '../../models/product.model';
 export class CatalogComponent implements OnInit {
   protected readonly productService = inject(ProductService);
   private readonly notificationService = inject(NotificationService);
+  private readonly route = inject(ActivatedRoute);
 
   // Container-owned signals
   readonly filter = signal<CatalogFilter>({});
@@ -164,7 +166,15 @@ export class CatalogComponent implements OnInit {
         this.notificationService.notify('No se pudieron cargar las categorías', 'error');
       },
     });
-    this.runSearch();
+
+    // The navbar search navigates here with ?q=term. React to it — the subscription
+    // also fires with the current params on init, so it covers the first load too.
+    this.route.queryParamMap.subscribe((params) => {
+      const q = params.get('q')?.trim() || undefined;
+      this.filter.set({ ...this.filter(), name: q });
+      this.page.set(0);
+      this.runSearch();
+    });
   }
 
   runSearch(): void {

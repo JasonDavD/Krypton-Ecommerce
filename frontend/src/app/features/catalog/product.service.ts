@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { catchError, shareReplay } from 'rxjs/operators';
+import { catchError, map, shareReplay } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import {
   CatalogFilter,
@@ -85,6 +85,18 @@ export class ProductService {
   /** GET /api/products/{id} → ProductResponse. Caller subscribes. */
   getById(id: number): Observable<ProductResponse> {
     return this.http.get<ProductResponse>(`${environment.apiBaseUrl}/api/products/${id}`);
+  }
+
+  /**
+   * GET /api/products?size={limit} → first page content only, for the Home
+   * "destacados" strip. Returns an Observable and does NOT touch the shared
+   * catalog signals, so Home and Catálogo never fight over list state.
+   */
+  featured(limit = 8): Observable<ProductResponse[]> {
+    const params = new HttpParams().set('page', '0').set('size', String(limit));
+    return this.http
+      .get<PageResponse<ProductResponse>>(`${environment.apiBaseUrl}/api/products`, { params })
+      .pipe(map((page) => page.content));
   }
 
   // ---------------------------------------------------------------------------
