@@ -1,1 +1,8 @@
-/* You can add global styles to this file, and also import other style files */
+/* Estilos globales — Krypton.
+   Design system (tokens + fuentes + base) extraído del skill krypton-design.
+   Fuente de verdad runtime: ./styles/design-system/ */
+@use './styles/design-system/fonts';
+@use './styles/design-system/colors';
+@use './styles/design-system/typography';
+@use './styles/design-system/spacing';
+@use './styles/design-system/base';
