@@ -44,12 +44,12 @@ describe('NavbarComponent', () => {
     it('shows login and register links', async () => {
       const { el } = await setup(makeAuthStub({ authenticated: false }));
       expect(el.textContent).toContain('Iniciar sesión');
-      expect(el.textContent).toContain('Registrarse');
+      expect(el.textContent).toContain('Crear cuenta');
     });
 
     it('does NOT show logout button', async () => {
       const { el } = await setup(makeAuthStub({ authenticated: false }));
-      const btn = el.querySelector('.navbar__logout');
+      const btn = el.querySelector('.nav__logout');
       expect(btn).toBeNull();
     });
 
@@ -63,13 +63,13 @@ describe('NavbarComponent', () => {
     it('shows user email and logout button', async () => {
       const { el } = await setup(makeAuthStub({ authenticated: true, email: 'cliente@krypton.pe', admin: false }));
       expect(el.textContent).toContain('cliente@krypton.pe');
-      expect(el.querySelector('.navbar__logout')).not.toBeNull();
+      expect(el.querySelector('.nav__logout')).not.toBeNull();
     });
 
     it('does NOT show login or register links', async () => {
       const { el } = await setup(makeAuthStub({ authenticated: true, email: 'cliente@krypton.pe', admin: false }));
       expect(el.textContent).not.toContain('Iniciar sesión');
-      expect(el.textContent).not.toContain('Registrarse');
+      expect(el.textContent).not.toContain('Crear cuenta');
     });
 
     it('does NOT show Admin link', async () => {
@@ -86,13 +86,13 @@ describe('NavbarComponent', () => {
 
     it('shows logout button', async () => {
       const { el } = await setup(makeAuthStub({ authenticated: true, email: 'admin@krypton.pe', admin: true }));
-      expect(el.querySelector('.navbar__logout')).not.toBeNull();
+      expect(el.querySelector('.nav__logout')).not.toBeNull();
     });
 
     it('calls authService.logout() when logout button clicked', async () => {
       const stub = makeAuthStub({ authenticated: true, email: 'admin@krypton.pe', admin: true });
       const { el } = await setup(stub);
-      const btn = el.querySelector<HTMLButtonElement>('.navbar__logout')!;
+      const btn = el.querySelector<HTMLButtonElement>('.nav__logout')!;
       btn.click();
       expect(stub.logout).toHaveBeenCalledTimes(1);
     });

@@ -37,19 +37,7 @@ describe('AppComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render the navbar', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('app-navbar')).not.toBeNull();
-  });
-
-  it('should render the footer', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('app-footer')).not.toBeNull();
-  });
+  // navbar/footer moved to MainLayoutComponent — see main-layout.component.spec.ts
 
   it('should render the router outlet', () => {
     const fixture = TestBed.createComponent(AppComponent);
