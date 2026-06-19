@@ -39,7 +39,9 @@ export function CatalogPage() {
   const q = params.get('q') ?? '';
   const comingSoon = useComingSoon();
 
-  const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
+  // categoryId vive en la URL (?categoryId=X) → fuente de verdad: lo setea el
+  // dropdown del navbar y el sidebar, y queda bookmarkeable/compartible.
+  const categoryId = params.get('categoryId') ? Number(params.get('categoryId')) : undefined;
   const [priceMax, setPriceMax] = useState(PRICE_MAX);
   const [inStock, setInStock] = useState(false);
   const [sort, setSort] = useState<Sort>('relevancia');
@@ -95,9 +97,15 @@ export function CatalogPage() {
     setParams(next);
   };
 
+  const setCategory = (id?: number) => {
+    const next = new URLSearchParams(params);
+    if (id != null) next.set('categoryId', String(id));
+    else next.delete('categoryId');
+    setParams(next);
+  };
+
   const clearAll = () => {
-    setParams({});
-    setCategoryId(undefined);
+    setParams({}); // limpia q y categoryId de la URL
     setPriceMax(PRICE_MAX);
     setInStock(false);
     setSort('relevancia');
@@ -146,7 +154,7 @@ export function CatalogPage() {
               <button
                 type="button"
                 className={categoryId == null ? 'ctl-cat ctl-cat--on' : 'ctl-cat'}
-                onClick={() => setCategoryId(undefined)}
+                onClick={() => setCategory(undefined)}
               >
                 <span className="ctl-cat__name"><LayoutGrid size={17} />Todas las categorías</span>
               </button>
@@ -158,7 +166,7 @@ export function CatalogPage() {
                     key={c.id}
                     type="button"
                     className={on ? 'ctl-cat ctl-cat--on' : 'ctl-cat'}
-                    onClick={() => setCategoryId(c.id)}
+                    onClick={() => setCategory(c.id)}
                   >
                     <span className="ctl-cat__name"><Icon size={17} />{c.name}</span>
                   </button>
@@ -198,7 +206,7 @@ export function CatalogPage() {
             <div className="ctl-chips">
               <span className="ctl-chips__label">Filtros activos:</span>
               {q && <button type="button" className="ctl-chip" onClick={() => setQuery('')}>“{q}” <i>×</i></button>}
-              {activeCategory && <button type="button" className="ctl-chip" onClick={() => setCategoryId(undefined)}>{activeCategory.name} <i>×</i></button>}
+              {activeCategory && <button type="button" className="ctl-chip" onClick={() => setCategory(undefined)}>{activeCategory.name} <i>×</i></button>}
               {priceMax < PRICE_MAX && <button type="button" className="ctl-chip" onClick={() => setPriceMax(PRICE_MAX)}>Hasta {pen.format(priceMax)} <i>×</i></button>}
               {inStock && <button type="button" className="ctl-chip" onClick={() => setInStock(false)}>En stock <i>×</i></button>}
             </div>

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Truck, X } from 'lucide-react';
+import { ChevronDown, Search, ShoppingCart, Truck, X } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { useComingSoon } from '../coming-soon/ComingSoon';
+import { listCategories } from '../../features/catalog/products.api';
+import type { CategoryResponse } from '../../models/product';
 import './navbar.css';
 
 /**
@@ -17,6 +19,33 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Menú desplegable de categorías (cargadas del backend).
+  const [catOpen, setCatOpen] = useState(false);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const catRef = useRef<HTMLDivElement>(null);
+
+  // Categorías para el menú (una sola vez).
+  useEffect(() => {
+    listCategories().then(setCategories).catch(() => {});
+  }, []);
+
+  // Cerrar el menú al hacer click afuera o con Escape.
+  useEffect(() => {
+    if (!catOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) setCatOpen(false);
+    };
+    const onEsc = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') setCatOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onEsc);
+    };
+  }, [catOpen]);
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -55,7 +84,36 @@ export function Navbar() {
           {!searchOpen && (
             <nav className="nv-links">
               <Link to="/catalogo" className="nv-link">Catálogo</Link>
-              <Link to="/catalogo" className="nv-link">Categorías</Link>
+              <div className="nv-drop" ref={catRef}>
+                <button
+                  type="button"
+                  className={catOpen ? 'nv-link nv-link--open' : 'nv-link'}
+                  onClick={() => setCatOpen((o) => !o)}
+                  aria-haspopup="true"
+                  aria-expanded={catOpen}
+                >
+                  Categorías <ChevronDown size={15} className="nv-drop__caret" />
+                </button>
+                {catOpen && (
+                  <div className="nv-menu" role="menu">
+                    {categories.length === 0 ? (
+                      <span className="nv-menu__empty">Cargando…</span>
+                    ) : (
+                      categories.map((c) => (
+                        <Link
+                          key={c.id}
+                          to={`/catalogo?categoryId=${c.id}`}
+                          className="nv-menu__item"
+                          role="menuitem"
+                          onClick={() => setCatOpen(false)}
+                        >
+                          {c.name}
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
               <button type="button" className="nv-link" onClick={() => comingSoon.show('Ofertas')}>Ofertas</button>
               {isAuthenticated && <Link to="/pedidos" className="nv-link">Mis pedidos</Link>}
             </nav>
