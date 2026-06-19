@@ -3,6 +3,7 @@ import { MainLayout } from './app/MainLayout';
 import { HomePage } from './features/home/HomePage';
 import { LoginPage } from './features/auth/LoginPage';
 import { RegisterPage } from './features/auth/RegisterPage';
+import { CatalogPage } from './features/catalog/CatalogPage';
 import { Placeholder } from './components/Placeholder';
 
 /**
@@ -21,7 +22,7 @@ function App() {
       {/* Tienda (con navbar + footer) */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/catalogo" element={<Placeholder title="Catálogo" />} />
+        <Route path="/catalogo" element={<CatalogPage />} />
         <Route path="/catalogo/:id" element={<Placeholder title="Detalle de producto" />} />
         <Route path="/carrito" element={<Placeholder title="Carrito" />} />
         <Route path="/pedidos" element={<Placeholder title="Mis pedidos" />} />
