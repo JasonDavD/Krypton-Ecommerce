@@ -72,6 +72,8 @@
 .ctl-chip i { color: var(--text-faint); font-size: 15px; line-height: 1; font-style: normal; }
 
 .ctl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); gap: 22px; }
+/* Recarga (cambio de filtro): la grilla sigue montada, sólo se atenúa → sin salto de scroll. */
+.ctl-grid--busy { opacity: 0.55; pointer-events: none; transition: opacity 140ms ease; }
 
 .ctl-status { padding: 56px 0; text-align: center; color: var(--text-muted); font-size: 15px; }
 .ctl-status--err { color: var(--kr-danger); }

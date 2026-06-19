@@ -6,6 +6,9 @@ import { RegisterPage } from './features/auth/RegisterPage';
 import { CatalogPage } from './features/catalog/CatalogPage';
 import { ProductDetailPage } from './features/catalog/ProductDetailPage';
 import { CartPage } from './features/cart/CartPage';
+import { CheckoutPage } from './features/checkout/CheckoutPage';
+import { OrdersPage } from './features/orders/OrdersPage';
+import { OrderDetailPage } from './features/orders/OrderDetailPage';
 import { Placeholder } from './components/Placeholder';
 
 /**
@@ -27,7 +30,9 @@ function App() {
         <Route path="/catalogo" element={<CatalogPage />} />
         <Route path="/catalogo/:id" element={<ProductDetailPage />} />
         <Route path="/carrito" element={<CartPage />} />
-        <Route path="/pedidos" element={<Placeholder title="Mis pedidos" />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/pedidos" element={<OrdersPage />} />
+        <Route path="/pedidos/:id" element={<OrderDetailPage />} />
         <Route path="/admin" element={<Placeholder title="Admin" />} />
         <Route path="/reportes" element={<Placeholder title="Reportes" />} />
         <Route path="*" element={<Navigate to="/" replace />} />

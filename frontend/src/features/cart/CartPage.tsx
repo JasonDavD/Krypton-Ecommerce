@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Lock, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { useCart } from '../../cart/CartContext';
-import { useComingSoon } from '../../components/coming-soon/ComingSoon';
 import { PLACEHOLDER_IMAGE } from '../../models/product';
 import './cart.css';
 
@@ -16,7 +15,6 @@ const pen = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN',
 export function CartPage() {
   const { isAuthenticated } = useAuth();
   const { cart, itemCount, loading, updateItem, removeItem, clear } = useCart();
-  const comingSoon = useComingSoon();
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -120,9 +118,9 @@ export function CartPage() {
             <span>Total</span>
             <span>{pen.format(cart.total)}</span>
           </div>
-          <button type="button" className="cart-summary__pay" onClick={() => comingSoon.show('Pago / Checkout')}>
+          <Link to="/checkout" className="cart-summary__pay">
             Proceder al pago <ArrowRight size={18} />
-          </button>
+          </Link>
           <button type="button" className="cart-summary__clear" onClick={() => run(clear)} disabled={mutating}>
             Vaciar carrito
           </button>

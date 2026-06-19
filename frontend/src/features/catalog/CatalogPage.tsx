@@ -42,7 +42,8 @@ export function CatalogPage() {
   // categoryId vive en la URL (?categoryId=X) → fuente de verdad: lo setea el
   // dropdown del navbar y el sidebar, y queda bookmarkeable/compartible.
   const categoryId = params.get('categoryId') ? Number(params.get('categoryId')) : undefined;
-  const [priceMax, setPriceMax] = useState(PRICE_MAX);
+  const [priceMax, setPriceMax] = useState(PRICE_MAX);          // valor inmediato: slider + label
+  const [priceMaxQuery, setPriceMaxQuery] = useState(PRICE_MAX); // valor debounced que dispara el fetch
   const [inStock, setInStock] = useState(false);
   const [sort, setSort] = useState<Sort>('relevancia');
   const [page, setPage] = useState(0);
@@ -59,16 +60,24 @@ export function CatalogPage() {
     listCategories().then(setCategories).catch(() => {});
   }, []);
 
-  // Volver a página 0 cuando cambian búsqueda / categoría / precio.
+  // Debounce del precio: el slider mueve el thumb y el label al instante, pero la
+  // búsqueda server-side espera 350ms tras el último ajuste → un solo fetch al soltar,
+  // en vez de uno por cada paso del slider (era lo que hacía parpadear la página).
+  useEffect(() => {
+    const t = setTimeout(() => setPriceMaxQuery(priceMax), 350);
+    return () => clearTimeout(t);
+  }, [priceMax]);
+
+  // Volver a página 0 cuando cambian búsqueda / categoría / precio (ya debounced).
   useEffect(() => {
     setPage(0);
-  }, [q, categoryId, priceMax]);
+  }, [q, categoryId, priceMaxQuery]);
 
   // Buscar productos (server-side) cuando cambian filtros o página.
   useEffect(() => {
     setLoading(true);
     setError(false);
-    search({ name: q || undefined, categoryId, priceMax: priceMax < PRICE_MAX ? priceMax : undefined }, page)
+    search({ name: q || undefined, categoryId, priceMax: priceMaxQuery < PRICE_MAX ? priceMaxQuery : undefined }, page)
       .then((res) => {
         setProducts(res.content);
         setTotalPages(res.totalPages);
@@ -76,7 +85,7 @@ export function CatalogPage() {
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [q, categoryId, priceMax, page]);
+  }, [q, categoryId, priceMaxQuery, page]);
 
   // Refinamientos client-side sobre la página cargada (stock + orden).
   const visible = useMemo(() => {
@@ -89,6 +98,10 @@ export function CatalogPage() {
   const activeCategory = categories.find((c) => c.id === categoryId);
   const heading = q ? `Resultados para “${q}”` : activeCategory ? activeCategory.name : 'Todos los productos';
   const resultLabel = totalElements === 1 ? '1 producto encontrado' : `${totalElements} productos encontrados`;
+
+  // "Cargando…" sólo en la PRIMERA carga; en recargas mantenemos la grilla montada
+  // (con un fundido) para no colapsar el alto de la página y evitar el salto de scroll.
+  const showSkeleton = loading && products.length === 0;
 
   const setQuery = (value: string) => {
     const next = new URLSearchParams(params);
@@ -212,7 +225,7 @@ export function CatalogPage() {
             </div>
           )}
 
-          {loading ? (
+          {showSkeleton ? (
             <p className="ctl-status">Cargando productos…</p>
           ) : error ? (
             <p className="ctl-status ctl-status--err">No se pudieron cargar los productos.</p>
@@ -225,7 +238,7 @@ export function CatalogPage() {
             </div>
           ) : (
             <>
-              <div className="ctl-grid">
+              <div className={loading ? 'ctl-grid ctl-grid--busy' : 'ctl-grid'}>
                 {visible.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
 
