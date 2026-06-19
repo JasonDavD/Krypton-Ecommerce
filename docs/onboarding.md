@@ -46,7 +46,7 @@ docker compose ps           # ver estado
 docker compose logs -f db   # ver logs en vivo
 ```
 
-Esto te deja una base en `localhost:3306`:
+Esto te deja una base en `localhost:3307` (3307 en el host para no chocar con un MySQL nativo en 3306):
 
 | Dato | Valor |
 | ---- | ----- |
