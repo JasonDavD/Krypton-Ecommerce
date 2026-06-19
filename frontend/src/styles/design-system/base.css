@@ -37,7 +37,8 @@ h4 { font-size: var(--fs-h4); font-weight: var(--fw-semibold); }
 p { margin: 0 0 var(--space-4); text-wrap: pretty; }
 
 a { color: var(--text-link); text-decoration: none; }
-a:hover { text-decoration: underline; }
+/* Sin subrayado global en hover: los links de la app (cards, CTAs, navbar)
+   usan color o efectos propios, no text-decoration. */
 
 /* Eyebrow / overline helper */
 .kr-eyebrow {
