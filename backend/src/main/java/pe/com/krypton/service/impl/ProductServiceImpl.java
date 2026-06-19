@@ -59,7 +59,8 @@ public class ProductServiceImpl implements ProductService {
         if (!product.isActive()) {
             throw new ResourceNotFoundException("Producto no encontrado: " + id);
         }
-        return productMapper.toResponse(product);
+        // toResponseWithImages() accesses the LAZY images collection — must remain inside @Transactional
+        return productMapper.toResponseWithImages(product);
     }
 
     @Override

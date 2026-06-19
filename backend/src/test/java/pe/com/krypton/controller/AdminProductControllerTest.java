@@ -49,7 +49,7 @@ class AdminProductControllerTest {
 
     private ProductResponse sampleProduct(Long id) {
         return new ProductResponse(id, "SKU-01", "Laptop Pro", "Desc",
-                new BigDecimal("1500.00"), 5, null, true, 1L, "Electronics");
+                new BigDecimal("1500.00"), 5, null, true, 1L, "Electronics", null);
     }
 
     @Test

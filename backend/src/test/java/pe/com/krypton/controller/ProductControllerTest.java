@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
 import pe.com.krypton.dto.response.PageResponse;
+import pe.com.krypton.dto.response.ProductImageResponse;
 import pe.com.krypton.dto.response.ProductResponse;
 import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.security.JwtAuthenticationFilter;
@@ -41,7 +42,16 @@ class ProductControllerTest {
 
     private ProductResponse sampleProduct(Long id) {
         return new ProductResponse(id, "SKU-" + id, "Product " + id, "Desc",
-                new BigDecimal("99.90"), 10, null, true, 1L, "Electronics");
+                new BigDecimal("99.90"), 10, null, true, 1L, "Electronics", null);
+    }
+
+    private ProductResponse sampleProductWithImages(Long id) {
+        List<ProductImageResponse> images = List.of(
+                new ProductImageResponse(10L, "http://localhost:8080/api/uploads/images/a.jpg", (short) 0, true),
+                new ProductImageResponse(11L, "http://localhost:8080/api/uploads/images/b.jpg", (short) 1, false));
+        return new ProductResponse(id, "SKU-" + id, "Product " + id, "Desc",
+                new BigDecimal("99.90"), 10, "http://localhost:8080/api/uploads/images/a.jpg",
+                true, 1L, "Electronics", images);
     }
 
     @Test
@@ -87,5 +97,34 @@ class ProductControllerTest {
 
         mvc.perform(get("/api/products/99"))
                 .andExpect(status().isNotFound());
+    }
+
+    // ─── P4 contract: images field absent in list, present in detail ────────────
+
+    @Test
+    void should_not_include_images_field_in_list_response() throws Exception {
+        var page = new PageImpl<>(List.of(sampleProduct(1L)), PageRequest.of(0, 20), 1);
+        when(productService.search(isNull(), isNull(), isNull(), isNull(), any()))
+                .thenReturn(PageResponse.of(page));
+
+        // images field must be absent (null → omitted via @JsonInclude(NON_NULL))
+        mvc.perform(get("/api/products"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].images").doesNotExist());
+    }
+
+    @Test
+    void should_include_images_array_in_detail_response() throws Exception {
+        when(productService.getById(5L)).thenReturn(sampleProductWithImages(5L));
+
+        mvc.perform(get("/api/products/5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.images").isArray())
+                .andExpect(jsonPath("$.images.length()").value(2))
+                .andExpect(jsonPath("$.images[0].id").value(10))
+                .andExpect(jsonPath("$.images[0].url").value("http://localhost:8080/api/uploads/images/a.jpg"))
+                .andExpect(jsonPath("$.images[0].displayOrder").value(0))
+                .andExpect(jsonPath("$.images[0].cover").value(true))
+                .andExpect(jsonPath("$.images[1].cover").value(false));
     }
 }

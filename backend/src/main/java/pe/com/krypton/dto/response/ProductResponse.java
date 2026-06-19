@@ -1,6 +1,8 @@
 package pe.com.krypton.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;
+import java.util.List;
 
 public record ProductResponse(
         Long id,
@@ -12,5 +14,6 @@ public record ProductResponse(
         String imageUrl,
         boolean active,
         Long categoryId,
-        String categoryName) {
+        String categoryName,
+        @JsonInclude(JsonInclude.Include.NON_NULL) List<ProductImageResponse> images) {
 }
