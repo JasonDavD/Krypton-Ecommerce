@@ -25,6 +25,7 @@ import pe.com.krypton.dto.response.OrderItemResponse;
 import pe.com.krypton.dto.response.OrderResponse;
 import pe.com.krypton.exception.EmptyCartException;
 import pe.com.krypton.exception.InsufficientStockException;
+import pe.com.krypton.exception.InvalidDocumentException;
 import pe.com.krypton.exception.OrderStatusTransitionException;
 import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.security.JwtAuthenticationFilter;
@@ -49,11 +50,15 @@ class OrderControllerTest {
 
     private static final String JSON = MediaType.APPLICATION_JSON_VALUE;
     private static final String USER_EMAIL = "client@krypton.pe";
+    private static final String CHECKOUT_BODY =
+            "{\"documentType\":\"BOLETA\",\"customerName\":\"Juan Cliente\",\"customerDoc\":\"12345678\"}";
 
     private OrderResponse sampleOrder(Long id, String status) {
         OrderItemResponse item = new OrderItemResponse(
                 1L, 12L, "Notebook", 2, new BigDecimal("2999.90"), new BigDecimal("5999.80"));
         return new OrderResponse(id, 3L, Instant.now(), status,
+                "BOLETA", "Juan Cliente", "12345678",
+                new BigDecimal("5999.80"), BigDecimal.ZERO, new BigDecimal("915.22"),
                 new BigDecimal("5999.80"), List.of(item));
     }
 
@@ -62,9 +67,9 @@ class OrderControllerTest {
     @Test
     @WithMockUser(username = USER_EMAIL)
     void checkout_returns_201_with_order_response() throws Exception {
-        when(orderService.checkout(USER_EMAIL)).thenReturn(sampleOrder(1L, "PENDIENTE"));
+        when(orderService.checkout(eq(USER_EMAIL), any())).thenReturn(sampleOrder(1L, "PENDIENTE"));
 
-        mvc.perform(post("/api/orders/checkout"))
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.status").value("PENDIENTE"))
@@ -76,20 +81,41 @@ class OrderControllerTest {
     @Test
     @WithMockUser(username = USER_EMAIL)
     void checkout_empty_cart_returns_400() throws Exception {
-        when(orderService.checkout(USER_EMAIL))
+        when(orderService.checkout(eq(USER_EMAIL), any()))
                 .thenThrow(new EmptyCartException("El carrito está vacío"));
 
-        mvc.perform(post("/api/orders/checkout"))
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL)
     void checkout_insufficient_stock_returns_422() throws Exception {
-        when(orderService.checkout(USER_EMAIL))
+        when(orderService.checkout(eq(USER_EMAIL), any()))
                 .thenThrow(new InsufficientStockException("Stock insuficiente"));
 
-        mvc.perform(post("/api/orders/checkout"))
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL)
+    void checkout_missing_document_type_returns_400() throws Exception {
+        // documentType es @NotNull → bean validation rechaza antes de tocar el service
+        mvc.perform(post("/api/orders/checkout").contentType(JSON)
+                        .content("{\"customerName\":\"Juan\",\"customerDoc\":\"12345678\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL)
+    void checkout_invalid_document_for_type_returns_422() throws Exception {
+        // FACTURA con DNI (8 díg) pasa el @Pattern genérico pero el service la rechaza → 422
+        when(orderService.checkout(eq(USER_EMAIL), any()))
+                .thenThrow(new InvalidDocumentException("La factura requiere un RUC de 11 dígitos"));
+
+        mvc.perform(post("/api/orders/checkout").contentType(JSON)
+                        .content("{\"documentType\":\"FACTURA\",\"customerName\":\"ACME\",\"customerDoc\":\"12345678\"}"))
                 .andExpect(status().isUnprocessableEntity());
     }
 

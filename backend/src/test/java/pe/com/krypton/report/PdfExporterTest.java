@@ -95,7 +95,10 @@ class PdfExporterTest {
     @Test
     void exportOrdenes_nonempty_produces_pdf_magic() {
         OrderResponse order = new OrderResponse(
-                1L, 10L, Instant.now(), "CONFIRMADA", new BigDecimal("99.00"), List.of());
+                1L, 10L, Instant.now(), "CONFIRMADA",
+                "BOLETA", "Juan Cliente", "12345678",
+                new BigDecimal("99.00"), BigDecimal.ZERO, new BigDecimal("15.10"),
+                new BigDecimal("99.00"), List.of());
         OrdenesListadoReport report = new OrdenesListadoReport(
                 "CONFIRMADA", null, null, null, 1L, List.of(order));
 

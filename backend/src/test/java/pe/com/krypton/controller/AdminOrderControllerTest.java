@@ -49,6 +49,8 @@ class AdminOrderControllerTest {
 
     private OrderResponse sampleOrder(Long id, String status) {
         return new OrderResponse(id, 3L, Instant.now(), status,
+                "BOLETA", "Juan Cliente", "12345678",
+                new BigDecimal("299.90"), BigDecimal.ZERO, new BigDecimal("45.75"),
                 new BigDecimal("299.90"), List.of());
     }
 
