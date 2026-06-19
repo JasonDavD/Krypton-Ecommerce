@@ -1,69 +1,35 @@
-import { API_BASE_URL } from './config';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { MainLayout } from './app/MainLayout';
+import { HomePage } from './features/home/HomePage';
+import { LoginPage } from './features/auth/LoginPage';
+import { RegisterPage } from './features/auth/RegisterPage';
+import { Placeholder } from './components/Placeholder';
 
 /**
- * Pantalla temporal de verificación: confirma que el design system carga
- * (fuente Kanit, tokens de color, logo, assets). Se reemplaza por el router +
- * las vistas reales en el siguiente paso.
+ * Mapa de rutas. Dos shells:
+ *  - /cuenta/** → bare (auth inmersiva, sin navbar/footer)
+ *  - resto → MainLayout (navbar + footer)
+ * Las vistas placeholder se reemplazan por las portadas del diseño aprobado.
  */
-const SWATCHES: ReadonlyArray<[string, string]> = [
-  ['Navy', '--kr-navy-800'],
-  ['Azul', '--kr-blue-600'],
-  ['Naranja', '--kr-orange-500'],
-  ['Amarillo', '--kr-yellow-500'],
-];
-
 function App() {
   return (
-    <main style={{ maxWidth: 880, margin: '0 auto', padding: '72px 24px' }}>
-      <img src="/brand/Krypton-navy.svg" alt="Krypton" style={{ height: 40, marginBottom: 28 }} />
+    <Routes>
+      {/* Auth (sin chrome) */}
+      <Route path="/cuenta/ingresar" element={<LoginPage />} />
+      <Route path="/cuenta/registro" element={<RegisterPage />} />
 
-      <span className="kr-eyebrow">Frontend React</span>
-      <h1
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontStyle: 'italic',
-          fontWeight: 900,
-          fontSize: 'var(--fs-display)',
-          letterSpacing: 'var(--ls-tight)',
-          lineHeight: 1,
-          margin: '10px 0 18px',
-        }}
-      >
-        Krypton <span style={{ color: 'var(--kr-orange-500)' }}>en React.</span>
-      </h1>
-
-      <p style={{ fontSize: 18, color: 'var(--text-muted)', maxWidth: 520, lineHeight: 1.6 }}>
-        Vite + React + TypeScript con el design system cargado: tipografía Kanit,
-        tokens de marca y assets listos. Próximo: router, auth y las vistas.
-      </p>
-
-      <div style={{ display: 'flex', gap: 12, marginTop: 30 }}>
-        {SWATCHES.map(([name, token]) => (
-          <div
-            key={name}
-            style={{
-              flex: 1,
-              height: 84,
-              borderRadius: 'var(--radius-md)',
-              background: `var(${token})`,
-              display: 'flex',
-              alignItems: 'flex-end',
-              padding: 10,
-              color: '#fff',
-              fontSize: 13,
-              fontWeight: 700,
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            {name}
-          </div>
-        ))}
-      </div>
-
-      <p style={{ marginTop: 30, fontSize: 13, color: 'var(--text-faint)' }}>
-        API backend: <code>{API_BASE_URL}</code>
-      </p>
-    </main>
+      {/* Tienda (con navbar + footer) */}
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/catalogo" element={<Placeholder title="Catálogo" />} />
+        <Route path="/catalogo/:id" element={<Placeholder title="Detalle de producto" />} />
+        <Route path="/carrito" element={<Placeholder title="Carrito" />} />
+        <Route path="/pedidos" element={<Placeholder title="Mis pedidos" />} />
+        <Route path="/admin" element={<Placeholder title="Admin" />} />
+        <Route path="/reportes" element={<Placeholder title="Reportes" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   );
 }
 
