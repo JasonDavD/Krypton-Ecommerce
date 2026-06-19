@@ -10,6 +10,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          # MySQL DATETIME no guarda zona horaria. Forzamos UTC para que los
+          # Instant se persistan/lean siempre en UTC (paridad con el TIMESTAMPTZ
+          # de Postgres) y el CONVERT_TZ de los reportes parta de '+00:00'.
+          time_zone: UTC
   flyway:
     enabled: true                 # aplica las migraciones pendientes al arrancar
   servlet:
@@ -33,6 +38,6 @@ spring:
     activate:
       on-profile: local
   datasource:
-    url: jdbc:postgresql://localhost:5432/krypton
+    url: jdbc:mysql://localhost:3306/krypton
     username: krypton
     password: krypton

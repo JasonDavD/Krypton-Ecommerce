@@ -2,11 +2,11 @@ package pe.com.krypton;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.MySQLContainer;
 
 /**
- * Base para tests de integración: levanta UN PostgreSQL real (Testcontainers,
- * postgres:16 — paridad con prod) compartido entre TODAS las subclases.
+ * Base para tests de integración: levanta UN MySQL real (Testcontainers,
+ * mysql:8 — paridad con prod) compartido entre TODAS las subclases.
  *
  * Patrón "singleton container": el contenedor se arranca a mano en el bloque
  * estático y NO se anota con @Testcontainers/@Container. Así vive durante todo
@@ -19,9 +19,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 abstract class AbstractIntegrationTest {
 
     @ServiceConnection
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
+    static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8");
 
     static {
-        POSTGRES.start();
+        MYSQL.start();
     }
 }

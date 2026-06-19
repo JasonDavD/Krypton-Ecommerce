@@ -15,7 +15,7 @@ pasos en orden, en ~10 minutos tenés la app levantada y los tests en verde.
 | Herramienta | Versión | Para qué |
 | ----------- | ------- | -------- |
 | **JDK** | 17 o superior | Compilar y correr el backend. El proyecto **apunta a Java 17** (es lo que se usa en clase). Si tenés JDK 21, compila a 17 igual. |
-| **Docker Desktop** | Engine reciente | Levanta PostgreSQL (la app) y los contenedores de los tests de integración (Testcontainers). |
+| **Docker Desktop** | Engine reciente | Levanta MySQL (la app) y los contenedores de los tests de integración (Testcontainers). |
 | **Maven** | — | **No hace falta instalarlo.** Usá el wrapper incluido: `./mvnw` (dentro de `backend/`). |
 | **Git** | cualquiera | Clonar el repo. |
 
@@ -34,28 +34,37 @@ cd Krypton-Ecommerce
 
 ## 3. Levantar la base de datos (Docker)
 
-Desde la **raíz** del repo. La app usa **PostgreSQL 16** local, definido en
-`docker-compose.yml`:
+Desde la **raíz** del repo. La app usa **MySQL 8** local, definido en
+`docker-compose.yml`. Vos controlás su ciclo de vida **a mano**:
 
 ```bash
-docker compose up -d
+docker compose up -d        # prender (en segundo plano)
+docker compose stop         # detener (conserva los datos)
+docker compose start        # volver a prender
+docker compose down         # eliminar el contenedor (con -v borra los datos)
+docker compose ps           # ver estado
+docker compose logs -f db   # ver logs en vivo
 ```
 
-Esto te deja una base en `localhost:5432`:
+Esto te deja una base en `localhost:3306`:
 
 | Dato | Valor |
 | ---- | ----- |
 | Base | `krypton` |
 | Usuario | `krypton` |
 | Password | `krypton` |
+| Root password | `root` |
 
-> ¿Por qué Postgres en Docker y no instalado a mano? Para tener **paridad con
-> producción** (que también es Postgres 16) y que todos en el equipo trabajen
-> contra exactamente la misma base, sin "en mi máquina anda".
+> ¿Por qué MySQL en Docker y no instalado a mano? Para tener **paridad** y que
+> todos trabajen contra exactamente la misma base, sin "en mi máquina anda".
+>
+> **Demo de resiliencia (clase):** con la app corriendo (`./mvnw spring-boot:run`),
+> en otra terminal hacé `docker compose stop` para ver cómo reacciona ante la BD
+> caída, y `docker compose start` para recuperarla.
 
 ## 4. Configurar los tests de integración (UNA vez por máquina)
 
-Los tests de integración no usan una base falsa: levantan un **Postgres real**
+Los tests de integración no usan una base falsa: levantan un **MySQL real**
 en un contenedor con **Testcontainers**. Para que Testcontainers encuentre tu
 Docker, corré este script **una sola vez** (desde la raíz):
 
@@ -95,7 +104,7 @@ cd backend
 ./mvnw test
 ```
 
-La primera vez Testcontainers baja la imagen `postgres:16` (tarda un poco).
+La primera vez Testcontainers baja la imagen `mysql:8` (tarda un poco).
 Después queda cacheada. Si todo está bien, terminás con `BUILD SUCCESS`.
 
 ---
@@ -139,7 +148,7 @@ asegurate de que `JAVA_HOME` apunte a un JDK 17+.
 | `backend/src/main/resources/db/migration/` | Migraciones Flyway (dueñas del schema) |
 | `backend/src/test/java/pe/com/krypton/` | Tests (unit + integración con Testcontainers) |
 | `frontend/` | SPA (pendiente: React/Angular) |
-| `docker-compose.yml` | PostgreSQL 16 local |
+| `docker-compose.yml` | MySQL 8 local |
 | `scripts/setup-tests.ps1` | Configura Testcontainers (Paso 4) |
 | `docs/arquitectura-backend.md` | Arquitectura por capas (leer antes de codear) |
 | `docs/modelo-datos.md` | Modelo de datos (8 tablas) |

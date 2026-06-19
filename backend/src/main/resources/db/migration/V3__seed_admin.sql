@@ -6,5 +6,5 @@ VALUES ('Admin Krypton',
         'admin@krypton.pe',
         '$2a$10$N0.6BPMeDJxcK3BQW/cDnOXSjq6hj9rHwkZd7rEliqr0g.dTnPdBy',
         'ADMIN',
-        TRUE,
-        now());
+        1,
+        CURRENT_TIMESTAMP(6));

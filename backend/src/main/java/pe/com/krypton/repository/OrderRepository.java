@@ -28,15 +28,18 @@ public interface OrderRepository extends JpaRepository<Order, Long>,
      * El rango es half-open: order_date >= :start AND order_date < :end.
      */
     @Query(value = """
-            SELECT date_trunc(:gran, o.order_date AT TIME ZONE 'America/Lima')::date AS periodo,
+            SELECT CASE :gran
+                     WHEN 'day'   THEN DATE(CONVERT_TZ(o.order_date, '+00:00', '-05:00'))
+                     WHEN 'month' THEN DATE(DATE_FORMAT(CONVERT_TZ(o.order_date, '+00:00', '-05:00'), '%Y-%m-01'))
+                   END                        AS periodo,
                    COUNT(o.id)                AS ordenes,
                    COALESCE(SUM(o.total), 0)  AS monto
             FROM orders o
             WHERE o.status = 'CONFIRMADA'
               AND o.order_date >= :start
               AND o.order_date < :end
-            GROUP BY 1
-            ORDER BY 1
+            GROUP BY periodo
+            ORDER BY periodo
             """,
             nativeQuery = true)
     List<VentasPeriodoProjection> ventasPorPeriodo(
