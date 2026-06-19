@@ -23,7 +23,7 @@ CREATE TABLE products (
     price       DECIMAL(12,2) NOT NULL,
     stock       INT           NOT NULL DEFAULT 0,
     image_url   VARCHAR(500),
-    active      TINYINT(1)    NOT NULL DEFAULT 1,
+    active      BOOLEAN       NOT NULL DEFAULT TRUE,
     category_id BIGINT        NOT NULL,
     CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories (id)
 );

@@ -5,7 +5,7 @@ CREATE TABLE product_image (
     product_id    BIGINT       NOT NULL,
     path          VARCHAR(500) NOT NULL,
     display_order SMALLINT     NOT NULL DEFAULT 0,
-    is_cover      TINYINT(1)   NOT NULL DEFAULT 0,
+    is_cover      BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at    DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     -- Columna generada: = product_id solo cuando is_cover; NULL en caso contrario.
     -- MySQL permite múltiples NULL en un índice UNIQUE → garantiza máximo UNA
