@@ -1,7 +1,7 @@
 # Krypton E-commerce — Modelo de Datos (Documento Didáctico)
 
 **Proyecto:** Krypton — E-commerce B2C de artefactos tecnológicos
-**Stack:** Spring Boot + PostgreSQL · **Curso:** CIBERTEC EFSRT VI
+**Stack:** Spring Boot + MySQL · **Curso:** CIBERTEC EFSRT VI
 **Propósito de este documento:** explicar el modelo de datos, las relaciones
 entre tablas y las decisiones de diseño, de forma que TODO el equipo (codifica-
 ción y documentación) entienda el *qué* y, sobre todo, el *porqué*.

@@ -123,5 +123,5 @@ ProductService (impl)    → regla: SKU único; @Transactional
 ProductRepository        → INSERT en la tabla products
    │
    ▼
-PostgreSQL
+MySQL
 ```

@@ -1,6 +1,6 @@
 // Krypton E-commerce — Modelo de datos (DBML)
 // Pegá este contenido en https://dbdiagram.io para un diagrama ER ordenado.
-// Permite arrastrar tablas, exportar PNG/PDF/SVG y generar el SQL de PostgreSQL.
+// Permite arrastrar tablas, exportar PNG/PDF/SVG y generar el SQL de MySQL.
 
 Table users {
   id         bigint    [pk, increment]
