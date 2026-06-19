@@ -197,7 +197,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     /**
-     * Maps the user-facing granularidad string to the SQL date_trunc token.
+     * Maps the user-facing granularidad to the bucket token used by ventasPorPeriodo.
      * "dia" → "day", "mes" → "month". Null / unknown → IllegalArgumentException.
      */
     private String mapGranularidad(String granularidad) {

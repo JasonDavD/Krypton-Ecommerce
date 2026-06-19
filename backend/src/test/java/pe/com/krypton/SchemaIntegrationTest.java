@@ -8,8 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Verifica que la migración Flyway V1 crea las 8 tablas del modelo
- * sobre un PostgreSQL real (Testcontainers, NO H2 — paridad con prod).
+ * Verifica que las migraciones Flyway crean el schema esperado
+ * sobre un MySQL real (Testcontainers, NO H2 — paridad con prod).
+ * Introspección vía information_schema; DATABASE() = el schema actual.
  */
 class SchemaIntegrationTest extends AbstractIntegrationTest {
 
@@ -19,7 +20,7 @@ class SchemaIntegrationTest extends AbstractIntegrationTest {
     @Test
     void v1_creates_the_eight_model_tables() {
         List<String> tables = jdbcTemplate.queryForList(
-                "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'",
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()",
                 String.class);
 
         assertThat(tables).contains(
@@ -31,7 +32,7 @@ class SchemaIntegrationTest extends AbstractIntegrationTest {
     void v2_adds_active_column_to_users() {
         List<String> columns = jdbcTemplate.queryForList(
                 "SELECT column_name FROM information_schema.columns "
-                        + "WHERE table_schema = 'public' AND table_name = 'users'",
+                        + "WHERE table_schema = DATABASE() AND table_name = 'users'",
                 String.class);
 
         assertThat(columns).contains("active");
@@ -42,7 +43,7 @@ class SchemaIntegrationTest extends AbstractIntegrationTest {
     @Test
     void v5_creates_product_image_table() {
         List<String> tables = jdbcTemplate.queryForList(
-                "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'",
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()",
                 String.class);
 
         assertThat(tables).contains("product_image");
@@ -52,7 +53,7 @@ class SchemaIntegrationTest extends AbstractIntegrationTest {
     void v5_product_image_has_expected_columns() {
         List<String> columns = jdbcTemplate.queryForList(
                 "SELECT column_name FROM information_schema.columns "
-                        + "WHERE table_schema = 'public' AND table_name = 'product_image'",
+                        + "WHERE table_schema = DATABASE() AND table_name = 'product_image'",
                 String.class);
 
         assertThat(columns).contains("id", "product_id", "path", "display_order", "is_cover", "created_at");
@@ -61,41 +62,37 @@ class SchemaIntegrationTest extends AbstractIntegrationTest {
     @Test
     void v5_creates_idx_product_image_product() {
         List<String> indexes = jdbcTemplate.queryForList(
-                "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename = 'product_image'",
+                "SELECT DISTINCT index_name FROM information_schema.statistics "
+                        + "WHERE table_schema = DATABASE() AND table_name = 'product_image'",
                 String.class);
 
         assertThat(indexes).contains("idx_product_image_product");
     }
 
+    /**
+     * MySQL no soporta índices parciales (el {@code WHERE is_cover = TRUE} de
+     * PostgreSQL). El invariante "una sola portada por producto" se garantiza con
+     * una columna generada {@code cover_key} (= product_id solo si is_cover, NULL
+     * si no) + un índice UNIQUE sobre ella. Este test verifica ambas piezas.
+     */
     @Test
-    void v5_creates_partial_unique_idx_product_image_cover() {
-        List<String> indexes = jdbcTemplate.queryForList(
-                "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename = 'product_image'",
+    void v5_cover_uniqueness_via_generated_column() {
+        // 1. La columna generada cover_key existe (generation_expression no vacía)
+        List<String> generatedCols = jdbcTemplate.queryForList(
+                "SELECT column_name FROM information_schema.columns "
+                        + "WHERE table_schema = DATABASE() AND table_name = 'product_image' "
+                        + "  AND generation_expression <> ''",
                 String.class);
 
-        assertThat(indexes).contains("idx_product_image_cover");
-    }
+        assertThat(generatedCols).contains("cover_key");
 
-    @Test
-    void v5_idx_product_image_cover_is_unique_and_partial() {
-        // pg_indexes + pg_class/pg_index to verify the partial unique constraint
-        Boolean isUnique = jdbcTemplate.queryForObject(
-                "SELECT ix.indisunique FROM pg_indexes pi "
-                        + "JOIN pg_class c ON c.relname = pi.indexname "
-                        + "JOIN pg_index ix ON ix.indexrelid = c.oid "
-                        + "WHERE pi.schemaname = 'public' "
-                        + "  AND pi.tablename = 'product_image' "
-                        + "  AND pi.indexname = 'idx_product_image_cover'",
-                Boolean.class);
+        // 2. El índice uq_product_image_cover existe y es UNIQUE (non_unique = 0)
+        Integer nonUnique = jdbcTemplate.queryForObject(
+                "SELECT non_unique FROM information_schema.statistics "
+                        + "WHERE table_schema = DATABASE() AND table_name = 'product_image' "
+                        + "  AND index_name = 'uq_product_image_cover' LIMIT 1",
+                Integer.class);
 
-        assertThat(isUnique).isTrue();
-
-        // Verify the WHERE predicate exists (indexdef contains WHERE)
-        String indexDef = jdbcTemplate.queryForObject(
-                "SELECT indexdef FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_product_image_cover'",
-                String.class);
-
-        assertThat(indexDef).containsIgnoringCase("WHERE");
-        assertThat(indexDef).containsIgnoringCase("is_cover");
+        assertThat(nonUnique).isZero();
     }
 }

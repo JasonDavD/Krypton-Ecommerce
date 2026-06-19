@@ -1,7 +1,7 @@
 # Krypton-Ecommerce — Agent Guide
 
 Backend: **Spring Boot + Java + Maven**. Base package `pe.com.krypton`. Arquitectura de
-**capas con interfaces**. Persistencia PostgreSQL + Flyway. Strict TDD activo.
+**capas con interfaces**. Persistencia MySQL 8 + Flyway. Strict TDD activo.
 
 Reglas compactas y contexto: ver [`.atl/skill-registry.md`](.atl/skill-registry.md).
 Modelo de datos y arquitectura: ver [`docs/`](docs/).
@@ -11,7 +11,7 @@ Modelo de datos y arquitectura: ver [`docs/`](docs/).
 | Skill | Descripción | Archivo |
 |-------|-------------|---------|
 | `krypton-backend` | Capas con interfaces + JPA + Flyway + REST/DTO. Reglas del modelo (snapshot de precio, stock cacheado + kardex, surrogate vs natural key). | [SKILL.md](.claude/skills/krypton-backend/SKILL.md) |
-| `krypton-tdd` | Strict TDD: JUnit 5 + Mockito (unit), `@WebMvcTest` (web), Testcontainers Postgres (integración). | [SKILL.md](.claude/skills/krypton-tdd/SKILL.md) |
+| `krypton-tdd` | Strict TDD: JUnit 5 + Mockito (unit), `@WebMvcTest` (web), Testcontainers MySQL (integración). | [SKILL.md](.claude/skills/krypton-tdd/SKILL.md) |
 
 ## Convenciones
 

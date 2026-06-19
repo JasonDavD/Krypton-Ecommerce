@@ -21,7 +21,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.MySQLContainer;
 
 /**
  * Tests the 413 Payload Too Large scenario for oversize file uploads.
@@ -39,10 +39,10 @@ class ProductImageOversizeTest {
     // Own container for RANDOM_PORT context (cannot share the AbstractIntegrationTest singleton
     // because webEnvironment RANDOM_PORT creates a separate Spring context)
     @ServiceConnection
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
+    static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8");
 
     static {
-        POSTGRES.start();
+        MYSQL.start();
     }
 
     @TempDir
