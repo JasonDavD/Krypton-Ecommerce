@@ -15,4 +15,6 @@
 .pc-add { width: 40px; height: 40px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px;
   border: none; cursor: pointer; background: var(--kr-orange-500); color: #fff; box-shadow: 0 10px 20px -8px rgba(243,116,2,0.6);
   transition: transform 120ms ease, filter 120ms ease; }
-.pc-add:hover { filter: brightness(0.96); transform: scale(1.06); }
+.pc-add:hover:not(:disabled) { filter: brightness(0.96); transform: scale(1.06); }
+.pc-add:disabled { cursor: default; opacity: 0.7; }
+.pc-add--ok { background: var(--kr-success); box-shadow: 0 10px 20px -8px rgba(31,157,87,0.6); }

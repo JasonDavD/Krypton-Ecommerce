@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronDown, Search, ShoppingCart, Truck, X } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
+import { useCart } from '../../cart/CartContext';
 import { useComingSoon } from '../coming-soon/ComingSoon';
 import { listCategories } from '../../features/catalog/products.api';
 import type { CategoryResponse } from '../../models/product';
@@ -14,6 +15,7 @@ import './navbar.css';
  */
 export function Navbar() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const { itemCount } = useCart();
   const comingSoon = useComingSoon();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -139,8 +141,9 @@ export function Navbar() {
               {searchOpen ? <X size={19} /> : <Search size={19} />}
             </button>
 
-            <Link to="/carrito" className="nv-iconbtn" aria-label="Carrito">
+            <Link to="/carrito" className="nv-iconbtn nv-cart" aria-label={`Carrito (${itemCount})`}>
               <ShoppingCart size={19} />
+              {itemCount > 0 && <span className="nv-cart__badge">{itemCount > 99 ? '99+' : itemCount}</span>}
             </Link>
 
             {isAuthenticated ? (

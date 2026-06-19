@@ -4,15 +4,18 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.tsx';
 import { AuthProvider } from './auth/AuthContext';
+import { CartProvider } from './cart/CartContext';
 import { ComingSoonProvider } from './components/coming-soon/ComingSoon';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <ComingSoonProvider>
-          <App />
-        </ComingSoonProvider>
+        <CartProvider>
+          <ComingSoonProvider>
+            <App />
+          </ComingSoonProvider>
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
