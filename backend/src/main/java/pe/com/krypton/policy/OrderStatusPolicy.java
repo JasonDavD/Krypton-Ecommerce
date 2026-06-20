@@ -12,8 +12,10 @@ import pe.com.krypton.model.enums.OrderStatus;
  *
  * <pre>
  *   PENDIENTE  → {CONFIRMADA, CANCELADA}
- *   CONFIRMADA → {CANCELADA}
- *   CANCELADA  → {}              (estado terminal)
+ *   CONFIRMADA → {ENVIADO, CANCELADA}
+ *   ENVIADO    → {ENTREGADO}        (ya no se cancela: el stock salió del almacén)
+ *   ENTREGADO  → {}                 (estado terminal)
+ *   CANCELADA  → {}                 (estado terminal)
  * </pre>
  *
  * Toda transición fuera de esta tabla —incluida la auto-transición— es ilegal y se
@@ -27,7 +29,9 @@ public class OrderStatusPolicy {
 
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED = Map.of(
             OrderStatus.PENDIENTE,  EnumSet.of(OrderStatus.CONFIRMADA, OrderStatus.CANCELADA),
-            OrderStatus.CONFIRMADA, EnumSet.of(OrderStatus.CANCELADA),
+            OrderStatus.CONFIRMADA, EnumSet.of(OrderStatus.ENVIADO, OrderStatus.CANCELADA),
+            OrderStatus.ENVIADO,    EnumSet.of(OrderStatus.ENTREGADO),
+            OrderStatus.ENTREGADO,  EnumSet.noneOf(OrderStatus.class),
             OrderStatus.CANCELADA,  EnumSet.noneOf(OrderStatus.class));
 
     /** Lanza {@link OrderStatusTransitionException} (422) si la transición no es legal. */

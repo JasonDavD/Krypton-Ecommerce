@@ -44,6 +44,12 @@ public class OrderMapper {
                 order.getUser().getId(),
                 order.getOrderDate(),
                 order.getStatus().name(),
+                order.getDocumentType().name(),
+                order.getCustomerName(),
+                order.getCustomerDoc(),
+                order.getSubtotal(),
+                order.getShippingCost(),
+                order.getIgv(),
                 order.getTotal(),
                 itemResponses);
     }

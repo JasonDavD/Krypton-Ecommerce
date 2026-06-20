@@ -40,6 +40,9 @@ import pe.com.krypton.repository.UserRepository;
 class OrderIntegrationTest extends AbstractIntegrationTest {
 
     private static final String JSON = MediaType.APPLICATION_JSON_VALUE;
+    /** Comprobante por defecto para el checkout (ahora @RequestBody obligatorio). */
+    private static final String CHECKOUT_BODY =
+            "{\"documentType\":\"BOLETA\",\"customerName\":\"Juan Cliente\",\"customerDoc\":\"12345678\"}";
     private static final String ADMIN_EMAIL    = "admin@krypton.pe";
     private static final String ADMIN_PASSWORD = "Admin123!";
 
@@ -193,7 +196,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         String clientToken = clientToken(uniqueEmail(), "Secret123!");
         addToCart(clientToken, prodId, 2);
 
-        MvcResult result = mvc.perform(post("/api/orders/checkout")
+        MvcResult result = mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(clientToken)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("PENDIENTE"))
@@ -202,6 +205,12 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.items.length()").value(1))
                 .andExpect(jsonPath("$.items[0].unitPrice").value(299.90))
                 .andExpect(jsonPath("$.items[0].quantity").value(2))
+                // Comprobante + desglose: subtotal 599.80 ≥ 300 → envío gratis; IGV desglosado
+                .andExpect(jsonPath("$.documentType").value("BOLETA"))
+                .andExpect(jsonPath("$.subtotal").value(599.80))
+                .andExpect(jsonPath("$.shippingCost").value(0))
+                .andExpect(jsonPath("$.igv").value(91.49))
+                .andExpect(jsonPath("$.total").value(599.80))
                 .andReturn();
 
         long orderId = objectMapper.readTree(result.getResponse().getContentAsString())
@@ -251,7 +260,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         });
 
         // Checkout should fail: qty=5 in cart but stock=0 → 422
-        mvc.perform(post("/api/orders/checkout")
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(clientToken)))
                 .andExpect(status().isUnprocessableEntity());
 
@@ -273,7 +282,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
     void checkout_with_empty_cart_returns_400_no_order_created() throws Exception {
         String clientToken = clientToken(uniqueEmail(), "Secret123!");
 
-        mvc.perform(post("/api/orders/checkout")
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(clientToken)))
                 .andExpect(status().isBadRequest());
 
@@ -300,16 +309,16 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
 
         // Client A places two orders
         addToCart(clientTokenA, prodId1, 1);
-        mvc.perform(post("/api/orders/checkout").header(HttpHeaders.AUTHORIZATION, bearer(clientTokenA)))
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY).header(HttpHeaders.AUTHORIZATION, bearer(clientTokenA)))
                 .andExpect(status().isCreated());
 
         addToCart(clientTokenA, prodId2, 1);
-        mvc.perform(post("/api/orders/checkout").header(HttpHeaders.AUTHORIZATION, bearer(clientTokenA)))
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY).header(HttpHeaders.AUTHORIZATION, bearer(clientTokenA)))
                 .andExpect(status().isCreated());
 
         // Client B places one order
         addToCart(clientTokenB, prodId1, 1);
-        mvc.perform(post("/api/orders/checkout").header(HttpHeaders.AUTHORIZATION, bearer(clientTokenB)))
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY).header(HttpHeaders.AUTHORIZATION, bearer(clientTokenB)))
                 .andExpect(status().isCreated());
 
         // Client A GET → should see exactly 2 orders, not Client B's
@@ -333,7 +342,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         String clientToken = clientToken(uniqueEmail(), "Secret123!");
         addToCart(clientToken, prodId, 2);
 
-        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout")
+        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(clientToken)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -364,7 +373,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         String tokenB = clientToken(uniqueEmail(), "Secret123!");
 
         addToCart(tokenA, prodId, 1);
-        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout")
+        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(tokenA)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -390,7 +399,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         String tokenB = clientToken(uniqueEmail(), "Secret123!");
 
         addToCart(tokenA, prodId, 1);
-        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout")
+        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(tokenA)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -416,7 +425,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         String clientToken = clientToken(uniqueEmail(), "Secret123!");
         addToCart(clientToken, prodId, 1);
 
-        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout")
+        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(clientToken)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -446,7 +455,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         String clientToken = clientToken(uniqueEmail(), "Secret123!");
         addToCart(clientToken, prodId, 1);
 
-        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout")
+        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(clientToken)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -483,11 +492,11 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         String tokenB = clientToken(uniqueEmail(), "Secret123!");
 
         addToCart(tokenA, prodId, 1);
-        mvc.perform(post("/api/orders/checkout").header(HttpHeaders.AUTHORIZATION, bearer(tokenA)))
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY).header(HttpHeaders.AUTHORIZATION, bearer(tokenA)))
                 .andExpect(status().isCreated());
 
         addToCart(tokenB, prodId, 1);
-        mvc.perform(post("/api/orders/checkout").header(HttpHeaders.AUTHORIZATION, bearer(tokenB)))
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY).header(HttpHeaders.AUTHORIZATION, bearer(tokenB)))
                 .andExpect(status().isCreated());
 
         String body = mvc.perform(get("/api/admin/orders").param("page", "0").param("size", "20")
@@ -518,7 +527,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         String clientToken = clientToken(uniqueEmail(), "Secret123!");
         addToCart(clientToken, prodId, 1);
 
-        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout")
+        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(clientToken)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -544,7 +553,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
         String clientToken = clientToken(uniqueEmail(), "Secret123!");
         addToCart(clientToken, prodId, 1);
 
-        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout")
+        MvcResult checkoutResult = mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY)
                         .header(HttpHeaders.AUTHORIZATION, bearer(clientToken)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -567,7 +576,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void unauthenticated_checkout_returns_401() throws Exception {
-        mvc.perform(post("/api/orders/checkout"))
+        mvc.perform(post("/api/orders/checkout").contentType(JSON).content(CHECKOUT_BODY))
                 .andExpect(status().isUnauthorized());
     }
 

@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import pe.com.krypton.dto.response.report.KardexReport;
+import pe.com.krypton.dto.response.report.TopProductosReport;
+import pe.com.krypton.dto.response.report.VentasPorPeriodoReport;
 import pe.com.krypton.report.ExcelExporter;
 import pe.com.krypton.report.PdfExporter;
 import pe.com.krypton.service.ReportService;
@@ -34,6 +37,35 @@ public class AdminReportController {
     private final ReportService reportService;
     private final ExcelExporter excelExporter;
     private final PdfExporter   pdfExporter;
+
+    // ─── Datos JSON para el dashboard (mismos reportes, sin exportar a archivo) ────
+
+    /** GET /api/admin/reports/ventas → VentasPorPeriodoReport (JSON, para gráficos/KPIs). */
+    @GetMapping("/ventas")
+    public VentasPorPeriodoReport ventasDatos(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(defaultValue = "dia") String granularidad) {
+        return reportService.ventasPorPeriodo(desde, hasta, granularidad);
+    }
+
+    /** GET /api/admin/reports/productos-vendidos → TopProductosReport (JSON). */
+    @GetMapping("/productos-vendidos")
+    public TopProductosReport topProductosDatos(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(defaultValue = "10") int limit) {
+        return reportService.topProductos(desde, hasta, limit);
+    }
+
+    /** GET /api/admin/reports/kardex → KardexReport (JSON, movimientos de un producto). */
+    @GetMapping("/kardex")
+    public KardexReport kardexDatos(
+            @RequestParam Long productId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        return reportService.kardexProducto(productId, desde, hasta);
+    }
 
     // ─── R1: Ventas por período ──────────────────────────────────────────────────
 

@@ -23,11 +23,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import pe.com.krypton.dto.request.CheckoutRequest;
 import pe.com.krypton.dto.request.PaymentRequest;
 import pe.com.krypton.dto.response.OrderResponse;
 import pe.com.krypton.dto.response.PageResponse;
 import pe.com.krypton.exception.EmptyCartException;
 import pe.com.krypton.exception.InsufficientStockException;
+import pe.com.krypton.exception.InvalidDocumentException;
 import pe.com.krypton.exception.OrderStatusTransitionException;
 import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.mapper.OrderMapper;
@@ -38,6 +41,7 @@ import pe.com.krypton.model.OrderItem;
 import pe.com.krypton.model.Product;
 import pe.com.krypton.model.StockMovement;
 import pe.com.krypton.model.User;
+import pe.com.krypton.model.enums.DocumentType;
 import pe.com.krypton.model.enums.MovementType;
 import pe.com.krypton.model.enums.OrderStatus;
 import pe.com.krypton.model.enums.PaymentMethod;
@@ -141,7 +145,14 @@ class OrderServiceImplTest {
 
     private OrderResponse sampleResponse() {
         return new OrderResponse(1L, 3L, Instant.now(), "PENDIENTE",
+                "BOLETA", "Juan Cliente", "12345678",
+                new BigDecimal("299.90"), BigDecimal.ZERO, new BigDecimal("45.75"),
                 new BigDecimal("299.90"), List.of());
+    }
+
+    /** Comprobante por defecto para checkout (boleta a consumidor final). */
+    private CheckoutRequest boletaRequest() {
+        return new CheckoutRequest(DocumentType.BOLETA, "Juan Cliente", "12345678");
     }
 
     // ─── CHECKOUT GROUP ─────────────────────────────────────────────────────────
@@ -170,16 +181,25 @@ class OrderServiceImplTest {
         OrderResponse expectedResponse = sampleResponse();
         when(orderMapper.toResponse(eq(savedOrder), any())).thenReturn(expectedResponse);
 
-        OrderResponse result = service.checkout(email);
+        OrderResponse result = service.checkout(email, boletaRequest());
 
         assertThat(result).isNotNull();
 
-        // Verify order saved with PENDIENTE and correct total
+        // Verify order saved with PENDIENTE, comprobante y desglose correctos
         ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
         verify(orderRepository).save(orderCaptor.capture());
         Order capturedOrder = orderCaptor.getValue();
         assertThat(capturedOrder.getStatus()).isEqualTo(OrderStatus.PENDIENTE);
+        // subtotal 599.80 ≥ 300 → envío gratis; total = subtotal
+        assertThat(capturedOrder.getSubtotal()).isEqualByComparingTo(new BigDecimal("599.80"));
+        assertThat(capturedOrder.getShippingCost()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(capturedOrder.getTotal()).isEqualByComparingTo(new BigDecimal("599.80")); // 2×299.90
+        // IGV desglosado: 599.80/1.18 = 508.31 base → igv = 91.49
+        assertThat(capturedOrder.getIgv()).isEqualByComparingTo(new BigDecimal("91.49"));
+        // Comprobante persistido desde el request
+        assertThat(capturedOrder.getDocumentType()).isEqualTo(DocumentType.BOLETA);
+        assertThat(capturedOrder.getCustomerName()).isEqualTo("Juan Cliente");
+        assertThat(capturedOrder.getCustomerDoc()).isEqualTo("12345678");
 
         // Verify OrderItem saved with price snapshot
         ArgumentCaptor<OrderItem> itemCaptor = ArgumentCaptor.forClass(OrderItem.class);
@@ -216,7 +236,7 @@ class OrderServiceImplTest {
         when(cartRepository.findByUser(u)).thenReturn(Optional.of(c));
         when(cartItemRepository.findByCart(c)).thenReturn(List.of()); // empty cart
 
-        assertThatThrownBy(() -> service.checkout(email))
+        assertThatThrownBy(() -> service.checkout(email, boletaRequest()))
                 .isInstanceOf(EmptyCartException.class);
 
         verify(orderRepository, never()).save(any());
@@ -232,7 +252,7 @@ class OrderServiceImplTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(u));
         when(cartRepository.findByUser(u)).thenReturn(Optional.empty()); // no cart at all
 
-        assertThatThrownBy(() -> service.checkout(email))
+        assertThatThrownBy(() -> service.checkout(email, boletaRequest()))
                 .isInstanceOf(EmptyCartException.class);
 
         verify(orderRepository, never()).save(any());
@@ -251,7 +271,7 @@ class OrderServiceImplTest {
         when(cartItemRepository.findByCart(c)).thenReturn(List.of(ci));
         when(productRepository.findByIdWithLock(10L)).thenReturn(Optional.of(p));
 
-        assertThatThrownBy(() -> service.checkout(email))
+        assertThatThrownBy(() -> service.checkout(email, boletaRequest()))
                 .isInstanceOf(InsufficientStockException.class);
 
         // No order, no stock movement persisted
@@ -273,10 +293,116 @@ class OrderServiceImplTest {
         when(cartItemRepository.findByCart(c)).thenReturn(List.of(ci));
         when(productRepository.findByIdWithLock(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.checkout(email))
+        assertThatThrownBy(() -> service.checkout(email, boletaRequest()))
                 .isInstanceOf(ResourceNotFoundException.class);
 
         verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void checkout_charges_20_shipping_when_subtotal_below_300() {
+        String email = "client@krypton.pe";
+        User u = user(3L, email);
+        Cart c = cart(1L, u);
+        Product p = product(10L, "Mouse", new BigDecimal("100.00"), 5);
+        CartItem ci = cartItem(1L, c, p, 1); // subtotal = 100.00 < 300
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(u));
+        when(cartRepository.findByUser(u)).thenReturn(Optional.of(c));
+        when(cartItemRepository.findByCart(c)).thenReturn(List.of(ci));
+        when(productRepository.findByIdWithLock(10L)).thenReturn(Optional.of(p));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(orderItemRepository.save(any(OrderItem.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovement.class))).thenReturn(new StockMovement());
+        when(orderMapper.toResponse(any(), any())).thenReturn(sampleResponse());
+
+        service.checkout(email, boletaRequest());
+
+        ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
+        verify(orderRepository).save(captor.capture());
+        Order o = captor.getValue();
+        assertThat(o.getSubtotal()).isEqualByComparingTo(new BigDecimal("100.00"));
+        assertThat(o.getShippingCost()).isEqualByComparingTo(new BigDecimal("20.00"));
+        assertThat(o.getTotal()).isEqualByComparingTo(new BigDecimal("120.00")); // 100 + 20
+        // IGV: 120/1.18 = 101.69 base → igv = 18.31
+        assertThat(o.getIgv()).isEqualByComparingTo(new BigDecimal("18.31"));
+    }
+
+    @Test
+    void checkout_free_shipping_when_subtotal_reaches_300() {
+        String email = "client@krypton.pe";
+        User u = user(3L, email);
+        Cart c = cart(1L, u);
+        Product p = product(10L, "Teclado", new BigDecimal("150.00"), 5);
+        CartItem ci = cartItem(1L, c, p, 2); // subtotal = 300.00 (umbral exacto)
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(u));
+        when(cartRepository.findByUser(u)).thenReturn(Optional.of(c));
+        when(cartItemRepository.findByCart(c)).thenReturn(List.of(ci));
+        when(productRepository.findByIdWithLock(10L)).thenReturn(Optional.of(p));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(orderItemRepository.save(any(OrderItem.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovement.class))).thenReturn(new StockMovement());
+        when(orderMapper.toResponse(any(), any())).thenReturn(sampleResponse());
+
+        service.checkout(email, boletaRequest());
+
+        ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
+        verify(orderRepository).save(captor.capture());
+        Order o = captor.getValue();
+        assertThat(o.getShippingCost()).isEqualByComparingTo(BigDecimal.ZERO); // ≥ 300 → gratis
+        assertThat(o.getTotal()).isEqualByComparingTo(new BigDecimal("300.00"));
+        // IGV: 300/1.18 = 254.24 base → igv = 45.76
+        assertThat(o.getIgv()).isEqualByComparingTo(new BigDecimal("45.76"));
+    }
+
+    @Test
+    void checkout_rejects_factura_without_ruc_length() {
+        // FACTURA con documento de 8 díg (DNI) → rechazo antes de tocar nada
+        CheckoutRequest req = new CheckoutRequest(DocumentType.FACTURA, "ACME SAC", "12345678");
+
+        assertThatThrownBy(() -> service.checkout("client@krypton.pe", req))
+                .isInstanceOf(InvalidDocumentException.class);
+
+        verify(userRepository, never()).findByEmail(any());
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void checkout_rejects_boleta_with_ruc_length() {
+        // BOLETA con documento de 11 díg (RUC) → rechazo
+        CheckoutRequest req = new CheckoutRequest(DocumentType.BOLETA, "Juan", "20512345678");
+
+        assertThatThrownBy(() -> service.checkout("client@krypton.pe", req))
+                .isInstanceOf(InvalidDocumentException.class);
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void checkout_accepts_factura_with_valid_ruc() {
+        String email = "client@krypton.pe";
+        User u = user(3L, email);
+        Cart c = cart(1L, u);
+        Product p = product(10L, "Notebook", new BigDecimal("299.90"), 5);
+        CartItem ci = cartItem(1L, c, p, 1);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(u));
+        when(cartRepository.findByUser(u)).thenReturn(Optional.of(c));
+        when(cartItemRepository.findByCart(c)).thenReturn(List.of(ci));
+        when(productRepository.findByIdWithLock(10L)).thenReturn(Optional.of(p));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(orderItemRepository.save(any(OrderItem.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovement.class))).thenReturn(new StockMovement());
+        when(orderMapper.toResponse(any(), any())).thenReturn(sampleResponse());
+
+        service.checkout(email, new CheckoutRequest(DocumentType.FACTURA, "ACME SAC", "20512345678"));
+
+        ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
+        verify(orderRepository).save(captor.capture());
+        Order o = captor.getValue();
+        assertThat(o.getDocumentType()).isEqualTo(DocumentType.FACTURA);
+        assertThat(o.getCustomerDoc()).isEqualTo("20512345678");
     }
 
     // ─── READ GROUP ──────────────────────────────────────────────────────────────
@@ -296,7 +422,8 @@ class OrderServiceImplTest {
         when(orderMapper.toResponse(any(), any())).thenAnswer(inv -> {
             Order o = inv.getArgument(0);
             return new OrderResponse(o.getId(), 3L, o.getOrderDate(), o.getStatus().name(),
-                    o.getTotal(), List.of());
+                    "BOLETA", "Cliente", "00000000",
+                    o.getTotal(), BigDecimal.ZERO, BigDecimal.ZERO, o.getTotal(), List.of());
         });
 
         List<OrderResponse> result = service.getMyOrders(email);
@@ -349,7 +476,9 @@ class OrderServiceImplTest {
         when(orderRepository.save(o)).thenReturn(o);
         when(orderItemRepository.findByOrder(o)).thenReturn(items);
         when(orderMapper.toResponse(o, items)).thenReturn(
-                new OrderResponse(3L, 3L, Instant.now(), "CONFIRMADA", BigDecimal.TEN, List.of()));
+                new OrderResponse(3L, 3L, Instant.now(), "CONFIRMADA",
+                        "BOLETA", "Cliente", "00000000",
+                        BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN, List.of()));
 
         OrderResponse result = service.pay(email, 3L, new PaymentRequest(PaymentMethod.YAPE));
 
@@ -407,11 +536,11 @@ class OrderServiceImplTest {
         Order o = order(1L, u, BigDecimal.TEN, OrderStatus.PENDIENTE);
         Page<Order> page = new PageImpl<>(List.of(o), pageable, 1);
 
-        when(orderRepository.findAll(pageable)).thenReturn(page);
+        when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
         when(orderItemRepository.findByOrder(o)).thenReturn(List.of());
         when(orderMapper.toResponse(eq(o), any())).thenReturn(sampleResponse());
 
-        PageResponse<OrderResponse> result = service.getAllOrders(pageable);
+        PageResponse<OrderResponse> result = service.getAllOrders(null, null, null, pageable);
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.totalElements()).isEqualTo(1);
@@ -453,7 +582,10 @@ class OrderServiceImplTest {
         when(productRepository.findByIdWithLock(10L)).thenReturn(Optional.of(p));
         when(orderRepository.save(o)).thenReturn(o);
         when(orderMapper.toResponse(eq(o), any())).thenReturn(
-                new OrderResponse(2L, 3L, Instant.now(), "CANCELADA", new BigDecimal("599.80"), List.of()));
+                new OrderResponse(2L, 3L, Instant.now(), "CANCELADA",
+                        "BOLETA", "Cliente", "00000000",
+                        new BigDecimal("599.80"), BigDecimal.ZERO, BigDecimal.ZERO,
+                        new BigDecimal("599.80"), List.of()));
 
         OrderResponse result = service.updateStatus(2L, OrderStatus.CANCELADA);
 
@@ -486,7 +618,10 @@ class OrderServiceImplTest {
         when(productRepository.findByIdWithLock(10L)).thenReturn(Optional.of(p));
         when(orderRepository.save(o)).thenReturn(o);
         when(orderMapper.toResponse(eq(o), any())).thenReturn(
-                new OrderResponse(2L, 3L, Instant.now(), "CANCELADA", new BigDecimal("299.90"), List.of()));
+                new OrderResponse(2L, 3L, Instant.now(), "CANCELADA",
+                        "BOLETA", "Cliente", "00000000",
+                        new BigDecimal("299.90"), BigDecimal.ZERO, BigDecimal.ZERO,
+                        new BigDecimal("299.90"), List.of()));
 
         service.updateStatus(2L, OrderStatus.CANCELADA);
 
@@ -521,7 +656,9 @@ class OrderServiceImplTest {
         when(orderRepository.save(o)).thenReturn(o);
         when(orderItemRepository.findByOrder(o)).thenReturn(List.of());
         when(orderMapper.toResponse(eq(o), any())).thenReturn(
-                new OrderResponse(2L, 3L, Instant.now(), "CONFIRMADA", BigDecimal.TEN, List.of()));
+                new OrderResponse(2L, 3L, Instant.now(), "CONFIRMADA",
+                        "BOLETA", "Cliente", "00000000",
+                        BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN, List.of()));
 
         OrderResponse result = service.updateStatus(2L, OrderStatus.CONFIRMADA);
 

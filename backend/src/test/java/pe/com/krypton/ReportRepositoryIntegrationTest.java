@@ -21,6 +21,7 @@ import pe.com.krypton.model.OrderItem;
 import pe.com.krypton.model.Product;
 import pe.com.krypton.model.StockMovement;
 import pe.com.krypton.model.User;
+import pe.com.krypton.model.enums.DocumentType;
 import pe.com.krypton.model.enums.MovementType;
 import pe.com.krypton.model.enums.OrderStatus;
 import pe.com.krypton.model.enums.Role;
@@ -361,6 +362,13 @@ class ReportRepositoryIntegrationTest extends AbstractIntegrationTest {
         o.setStatus(status);
         o.setOrderDate(orderDate);
         o.setTotal(total);
+        // Comprobante (NOT NULL desde V7) — valores dummy, irrelevantes para estos reportes.
+        o.setDocumentType(DocumentType.BOLETA);
+        o.setCustomerName("Cliente Test");
+        o.setCustomerDoc("12345678");
+        o.setSubtotal(total);
+        o.setShippingCost(BigDecimal.ZERO);
+        o.setIgv(BigDecimal.ZERO);
         return orderRepository.save(o);
     }
 

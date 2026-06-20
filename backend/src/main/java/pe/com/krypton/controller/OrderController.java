@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import pe.com.krypton.dto.request.CheckoutRequest;
 import pe.com.krypton.dto.request.PaymentRequest;
 import pe.com.krypton.dto.response.OrderResponse;
 import pe.com.krypton.service.OrderService;
@@ -33,8 +34,9 @@ public class OrderController {
     /** POST /api/orders/checkout → 201 OrderResponse */
     @PostMapping("/checkout")
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponse checkout(@AuthenticationPrincipal UserDetails principal) {
-        return orderService.checkout(principal.getUsername());
+    public OrderResponse checkout(@AuthenticationPrincipal UserDetails principal,
+                                  @Valid @RequestBody CheckoutRequest request) {
+        return orderService.checkout(principal.getUsername(), request);
     }
 
     /** GET /api/orders → 200 List<OrderResponse> (only the caller's orders, newest first) */

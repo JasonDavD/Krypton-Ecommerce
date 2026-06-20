@@ -1,7 +1,9 @@
 package pe.com.krypton.service;
 
+import java.time.Instant;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
+import pe.com.krypton.dto.request.CheckoutRequest;
 import pe.com.krypton.dto.request.PaymentRequest;
 import pe.com.krypton.dto.response.OrderResponse;
 import pe.com.krypton.dto.response.PageResponse;
@@ -9,8 +11,12 @@ import pe.com.krypton.model.enums.OrderStatus;
 
 public interface OrderService {
 
-    /** Atomic checkout: cart → Order (PENDIENTE), stock decrement, StockMovement, clear cart. */
-    OrderResponse checkout(String email);
+    /**
+     * Atomic checkout: cart → Order (PENDIENTE), stock decrement, StockMovement, clear cart.
+     * Calcula el envío (gratis ≥ S/300, si no S/20) y desglosa el IGV (el precio ya lo
+     * incluye). El comprobante (boleta/factura + receptor) viene en {@code request}.
+     */
+    OrderResponse checkout(String email, CheckoutRequest request);
 
     /** Returns the authenticated client's orders ordered by date DESC. */
     List<OrderResponse> getMyOrders(String email);
@@ -25,8 +31,8 @@ public interface OrderService {
      */
     OrderResponse pay(String email, Long orderId, PaymentRequest request);
 
-    /** Admin: paginated list of ALL orders. */
-    PageResponse<OrderResponse> getAllOrders(Pageable pageable);
+    /** Admin: lista paginada de órdenes con filtros opcionales (estado, rango de fecha). */
+    PageResponse<OrderResponse> getAllOrders(OrderStatus status, Instant from, Instant to, Pageable pageable);
 
     /** Admin: single order by id. Throws ResourceNotFoundException (404) if not found. */
     OrderResponse getOrder(Long orderId);

@@ -34,10 +34,10 @@ class KryptonApplicationTests extends AbstractIntegrationTest {
     void all_entities_map_to_their_tables() {
         // Cada count() ejecuta un SELECT sobre la tabla mapeada:
         // prueba el binding entidad <-> tabla de las 8 entidades.
-        // users NO está vacía: Flyway V3 siembra el ADMIN inicial.
+        // No vacías por seed de Flyway: V3 siembra el ADMIN; V6 siembra categorías + productos demo.
         assertThat(users.count()).isPositive();
-        assertThat(categories.count()).isZero();
-        assertThat(products.count()).isZero();
+        assertThat(categories.count()).isPositive();
+        assertThat(products.count()).isPositive();
         assertThat(carts.count()).isZero();
         assertThat(cartItems.count()).isZero();
         assertThat(orders.count()).isZero();

@@ -49,6 +49,8 @@ class AdminOrderControllerTest {
 
     private OrderResponse sampleOrder(Long id, String status) {
         return new OrderResponse(id, 3L, Instant.now(), status,
+                "BOLETA", "Juan Cliente", "12345678",
+                new BigDecimal("299.90"), BigDecimal.ZERO, new BigDecimal("45.75"),
                 new BigDecimal("299.90"), List.of());
     }
 
@@ -61,7 +63,7 @@ class AdminOrderControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void get_all_orders_returns_200_page_response() throws Exception {
-        when(orderService.getAllOrders(any()))
+        when(orderService.getAllOrders(any(), any(), any(), any()))
                 .thenReturn(singlePage(sampleOrder(1L, "PENDIENTE")));
 
         mvc.perform(get("/api/admin/orders").param("page", "0").param("size", "10"))

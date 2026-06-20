@@ -8,7 +8,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
- * Política CORS para el dev server Angular (http://localhost:4200).
+ * Política CORS para el dev server Vite/React (http://localhost:5173).
  *
  * Usa CorsConfigurationSource bean + http.cors(Customizer.withDefaults()) en
  * SecurityConfig — el único patrón correcto cuando Spring Security está presente.
@@ -25,7 +25,7 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Content-Disposition"));

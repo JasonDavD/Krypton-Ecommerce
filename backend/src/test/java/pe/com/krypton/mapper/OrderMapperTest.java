@@ -13,6 +13,7 @@ import pe.com.krypton.model.Order;
 import pe.com.krypton.model.OrderItem;
 import pe.com.krypton.model.Product;
 import pe.com.krypton.model.User;
+import pe.com.krypton.model.enums.DocumentType;
 import pe.com.krypton.model.enums.OrderStatus;
 
 /**
@@ -55,6 +56,13 @@ class OrderMapperTest {
         o.setTotal(total);
         o.setStatus(status);
         o.setOrderDate(Instant.now());
+        // Comprobante + desglose (el mapper los lee; documentType.name() NPE si es null)
+        o.setDocumentType(DocumentType.BOLETA);
+        o.setCustomerName("Juan Cliente");
+        o.setCustomerDoc("12345678");
+        o.setSubtotal(total);
+        o.setShippingCost(BigDecimal.ZERO);
+        o.setIgv(BigDecimal.ZERO);
         return o;
     }
 
@@ -154,5 +162,26 @@ class OrderMapperTest {
         assertThat(resp.items()).hasSize(2);
         assertThat(resp.items().get(0).productName()).isEqualTo("Laptop");
         assertThat(resp.items().get(1).productName()).isEqualTo("Mouse");
+    }
+
+    @Test
+    void toResponse_maps_comprobante_and_desglose() {
+        User u = user(3L);
+        Order o = order(1L, u, new BigDecimal("120.00"), OrderStatus.PENDIENTE);
+        o.setDocumentType(DocumentType.FACTURA);
+        o.setCustomerName("ACME SAC");
+        o.setCustomerDoc("20512345678");
+        o.setSubtotal(new BigDecimal("100.00"));
+        o.setShippingCost(new BigDecimal("20.00"));
+        o.setIgv(new BigDecimal("18.31"));
+
+        OrderResponse resp = mapper.toResponse(o, List.of());
+
+        assertThat(resp.documentType()).isEqualTo("FACTURA"); // enum.name() — desacoplado del wire
+        assertThat(resp.customerName()).isEqualTo("ACME SAC");
+        assertThat(resp.customerDoc()).isEqualTo("20512345678");
+        assertThat(resp.subtotal()).isEqualByComparingTo(new BigDecimal("100.00"));
+        assertThat(resp.shippingCost()).isEqualByComparingTo(new BigDecimal("20.00"));
+        assertThat(resp.igv()).isEqualByComparingTo(new BigDecimal("18.31"));
     }
 }

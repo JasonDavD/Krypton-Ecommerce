@@ -83,6 +83,66 @@ class AdminReportControllerTest {
         return new OrdenesListadoReport(null, null, null, null, 0L, List.of());
     }
 
+    // ─── GET /ventas y /productos-vendidos (JSON para el dashboard) ───────────────
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void ventas_datos_returns_200_json() throws Exception {
+        when(reportService.ventasPorPeriodo(any(), any(), any())).thenReturn(
+                new VentasPorPeriodoReport(Instant.now(), Instant.now(), "dia",
+                        12L, new BigDecimal("4500.00"), new BigDecimal("375.00"),
+                        List.of(new VentasPeriodoRow(LocalDate.of(2024, 1, 1), 3L, new BigDecimal("900.00")))));
+
+        mvc.perform(get("/api/admin/reports/ventas")
+                        .param("desde", "2024-01-01").param("hasta", "2024-01-31"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/json"))
+                .andExpect(jsonPath("$.totalOrdenes").value(12))
+                .andExpect(jsonPath("$.totalFacturado").value(4500.00))
+                .andExpect(jsonPath("$.filas.length()").value(1));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void ventas_datos_missing_desde_returns_400() throws Exception {
+        mvc.perform(get("/api/admin/reports/ventas").param("hasta", "2024-01-31"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void top_productos_datos_returns_200_json() throws Exception {
+        when(reportService.topProductos(any(), any(), eq(10))).thenReturn(
+                new TopProductosReport(null, null, 10,
+                        List.of(new TopProductoRow(1L, "SKU-1", "Laptop", 9L, new BigDecimal("8100.00")))));
+
+        mvc.perform(get("/api/admin/reports/productos-vendidos").param("limit", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productos[0].nombre").value("Laptop"))
+                .andExpect(jsonPath("$.productos[0].unidades").value(9));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void kardex_datos_returns_200_json() throws Exception {
+        when(reportService.kardexProducto(eq(1L), isNull(), isNull())).thenReturn(
+                new KardexReport(1L, "SKU-001", "Laptop", 8, Instant.now(), Instant.now(),
+                        List.of(new KardexMovimientoRow(Instant.now(), "SALIDA", 2, "Venta", "ORDER-5"))));
+
+        mvc.perform(get("/api/admin/reports/kardex").param("productId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nombre").value("Laptop"))
+                .andExpect(jsonPath("$.stockActual").value(8))
+                .andExpect(jsonPath("$.movimientos[0].tipo").value("SALIDA"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void kardex_datos_missing_productId_returns_400() throws Exception {
+        mvc.perform(get("/api/admin/reports/kardex"))
+                .andExpect(status().isBadRequest());
+    }
+
     // ─── GET /ventas/excel ────────────────────────────────────────────────────────
 
     @Test

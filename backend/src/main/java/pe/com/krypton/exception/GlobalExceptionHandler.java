@@ -54,6 +54,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ApiError(422, ex.getMessage()));
     }
 
+    @ExceptionHandler(InvalidDocumentException.class)
+    public ResponseEntity<ApiError> handleInvalidDocument(InvalidDocumentException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ApiError(422, ex.getMessage()));
+    }
+
     @ExceptionHandler(EmptyCartException.class)
     public ResponseEntity<ApiError> handleEmptyCart(EmptyCartException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(400, ex.getMessage()));
