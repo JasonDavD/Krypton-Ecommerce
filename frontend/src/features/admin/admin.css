@@ -28,6 +28,16 @@
 .adm-sku { font-family: monospace; font-size: 12.5px; color: var(--text-muted); }
 .adm-name { font-weight: 700; color: var(--text-strong); }
 .adm-muted { color: var(--text-faint); }
+
+/* controles de usuarios (rol inline, badge de estado, toggle activar/desactivar) */
+.adm-role { height: 36px; padding: 0 10px; border: 1.5px solid var(--border-subtle); border-radius: 9px; background: #fff; font-family: var(--font-sans); font-size: 13px; color: var(--text-body); cursor: pointer; }
+.adm-role:disabled { opacity: 0.6; cursor: not-allowed; }
+.adm-ubadge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.adm-ubadge--on { background: var(--kr-success-bg, #e7f7ee); color: var(--kr-success, #1f9d57); }
+.adm-ubadge--off { background: var(--kr-gray-100); color: var(--text-muted); }
+.adm-toggle { height: 34px; padding: 0 14px; border: 1px solid var(--border-subtle); border-radius: 9px; background: #fff; font-family: var(--font-sans); font-weight: 600; font-size: 13px; color: var(--text-body); cursor: pointer; transition: background 140ms ease; }
+.adm-toggle:hover:not(:disabled) { background: var(--kr-gray-100); }
+.adm-toggle:disabled { opacity: 0.5; cursor: not-allowed; }
 .adm-stock { font-weight: 700; }
 .adm-stock--out { color: var(--kr-danger); }
 

@@ -33,3 +33,11 @@ export interface UserResponse {
   /** ISO 8601 (ej. "2026-06-15T20:46:36.123456Z"). */
   createdAt: string;
 }
+
+/** Alta de usuario por un ADMIN (POST /api/admin/users): el rol es elegible. */
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+}
