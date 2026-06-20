@@ -34,6 +34,17 @@ export interface ProductResponse {
   images?: ProductImageResponse[];
 }
 
+/** Body para crear/editar un producto (POST/PUT /api/admin/products). Refleja ProductRequest. */
+export interface ProductRequest {
+  sku: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  stock: number;
+  imageUrl?: string | null;
+  categoryId: number;
+}
+
 /** Envoltorio de paginación genérico — refleja PageResponse<T> de Spring Data. */
 export interface PageResponse<T> {
   content: T[];

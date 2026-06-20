@@ -9,6 +9,9 @@ import { CartPage } from './features/cart/CartPage';
 import { CheckoutPage } from './features/checkout/CheckoutPage';
 import { OrdersPage } from './features/orders/OrdersPage';
 import { OrderDetailPage } from './features/orders/OrderDetailPage';
+import { RequireAdmin } from './auth/RequireAdmin';
+import { AdminLayout } from './features/admin/AdminLayout';
+import { AdminProductsPage } from './features/admin/AdminProductsPage';
 import { Placeholder } from './components/Placeholder';
 
 /**
@@ -33,8 +36,16 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/pedidos" element={<OrdersPage />} />
         <Route path="/pedidos/:id" element={<OrderDetailPage />} />
-        <Route path="/admin" element={<Placeholder title="Admin" />} />
-        <Route path="/reportes" element={<Placeholder title="Reportes" />} />
+        <Route element={<RequireAdmin />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/productos" replace />} />
+            <Route path="productos" element={<AdminProductsPage />} />
+            <Route path="categorias" element={<Placeholder title="Categorías" />} />
+            <Route path="usuarios" element={<Placeholder title="Usuarios" />} />
+            <Route path="pedidos" element={<Placeholder title="Pedidos" />} />
+            <Route path="reportes" element={<Placeholder title="Reportes" />} />
+          </Route>
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
