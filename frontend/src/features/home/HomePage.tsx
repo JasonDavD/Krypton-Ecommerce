@@ -87,6 +87,9 @@ export function HomePage() {
               </div>
             </div>
           </div>
+          <div className="hero__visual">
+            <img src="/banner-productos.png" alt="Parlante, speaker y gamepad Krypton" />
+          </div>
         </div>
       </section>
 

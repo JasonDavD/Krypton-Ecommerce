@@ -13,7 +13,11 @@
 .hero__tint { position: absolute; inset: 0; background: rgba(2,18,55,0.42); pointer-events: none; }
 .orb { position: absolute; border-radius: 50%; filter: blur(8px); pointer-events: none; }
 .hero__inner { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 88px 32px 96px; }
-.hero__content { max-width: 620px; color: #fff; }
+.hero__content { max-width: 560px; color: #fff; position: relative; z-index: 2; }
+/* La imagen sale del flujo: su tamaño lo controla width (abajo), no el flex.
+   Para agrandarla/achicarla, tocá SÓLO el `width` de esta regla. */
+.hero__visual { position: absolute; top: 50%; right: 32px; transform: translateY(-50%); width: 660px; max-width: 52%; z-index: 1; pointer-events: none; }
+.hero__visual img { display: block; width: 100%; height: auto; filter: drop-shadow(0 28px 55px rgba(0,0,0,0.55)); }
 .hero__content > * { animation: krRise 620ms var(--ease-out) both; }
 .hero__content > *:nth-child(2) { animation-delay: 90ms; }
 .hero__content > *:nth-child(3) { animation-delay: 170ms; }
@@ -94,6 +98,8 @@
   .cat-grid { grid-template-columns: repeat(3, 1fr); }
   .prod-grid, .trust-grid { grid-template-columns: repeat(2, 1fr); }
   .hero__title { font-size: 48px; }
+  .hero__inner { display: block; }      /* el texto toma todo el ancho */
+  .hero__visual { display: none; }      /* la imagen es decorativa: se oculta */
 }
 
 @keyframes krFloat  { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -26px); } }
