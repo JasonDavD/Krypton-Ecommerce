@@ -122,6 +122,27 @@ class AdminReportControllerTest {
                 .andExpect(jsonPath("$.productos[0].unidades").value(9));
     }
 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void kardex_datos_returns_200_json() throws Exception {
+        when(reportService.kardexProducto(eq(1L), isNull(), isNull())).thenReturn(
+                new KardexReport(1L, "SKU-001", "Laptop", 8, Instant.now(), Instant.now(),
+                        List.of(new KardexMovimientoRow(Instant.now(), "SALIDA", 2, "Venta", "ORDER-5"))));
+
+        mvc.perform(get("/api/admin/reports/kardex").param("productId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nombre").value("Laptop"))
+                .andExpect(jsonPath("$.stockActual").value(8))
+                .andExpect(jsonPath("$.movimientos[0].tipo").value("SALIDA"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void kardex_datos_missing_productId_returns_400() throws Exception {
+        mvc.perform(get("/api/admin/reports/kardex"))
+                .andExpect(status().isBadRequest());
+    }
+
     // ─── GET /ventas/excel ────────────────────────────────────────────────────────
 
     @Test

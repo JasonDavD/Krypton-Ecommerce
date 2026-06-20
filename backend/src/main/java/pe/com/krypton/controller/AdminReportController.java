@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import pe.com.krypton.dto.response.report.KardexReport;
 import pe.com.krypton.dto.response.report.TopProductosReport;
 import pe.com.krypton.dto.response.report.VentasPorPeriodoReport;
 import pe.com.krypton.report.ExcelExporter;
@@ -55,6 +56,15 @@ public class AdminReportController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             @RequestParam(defaultValue = "10") int limit) {
         return reportService.topProductos(desde, hasta, limit);
+    }
+
+    /** GET /api/admin/reports/kardex → KardexReport (JSON, movimientos de un producto). */
+    @GetMapping("/kardex")
+    public KardexReport kardexDatos(
+            @RequestParam Long productId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        return reportService.kardexProducto(productId, desde, hasta);
     }
 
     // ─── R1: Ventas por período ──────────────────────────────────────────────────
