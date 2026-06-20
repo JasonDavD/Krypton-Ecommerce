@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Download } from 'lucide-react';
-import { downloadReport, getTopProductos, getVentas } from './admin-reports.api';
-import type { TopProductosReport, VentasPorPeriodoReport } from '../../models/report';
+import { search } from '../catalog/products.api';
+import { downloadReport, getKardex, getTopProductos, getVentas } from './admin-reports.api';
+import type { KardexReport, TopProductosReport, VentasPorPeriodoReport } from '../../models/report';
+import type { ProductResponse } from '../../models/product';
 import './report.css';
 
 const pen = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 });
+const dateTimeFmt = new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' });
 const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
 
 /** Rango por defecto: últimos 30 días. */
@@ -27,6 +30,12 @@ export function AdminReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  // Kardex: selector de producto + sus movimientos en el período.
+  const [products, setProducts] = useState<ProductResponse[]>([]);
+  const [kardexProductId, setKardexProductId] = useState<number | ''>('');
+  const [kardex, setKardex] = useState<KardexReport | null>(null);
+  const [kardexLoading, setKardexLoading] = useState(false);
+
   const reload = useCallback(() => {
     setLoading(true);
     setError(false);
@@ -37,6 +46,19 @@ export function AdminReportsPage() {
   }, [desde, hasta, granularidad]);
 
   useEffect(() => { reload(); }, [reload]);
+
+  // Productos para el selector del kardex (una vez).
+  useEffect(() => { search({}, 0, 100).then((r) => setProducts(r.content)).catch(() => {}); }, []);
+
+  // Kardex del producto elegido, dentro del período.
+  useEffect(() => {
+    if (kardexProductId === '') { setKardex(null); return; }
+    setKardexLoading(true);
+    getKardex(kardexProductId, desde, hasta)
+      .then(setKardex)
+      .catch(() => setKardex(null))
+      .finally(() => setKardexLoading(false));
+  }, [kardexProductId, desde, hasta]);
 
   return (
     <div className="adm">
@@ -105,6 +127,49 @@ export function AdminReportsPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : <p className="adm-empty">Sin productos vendidos en el período.</p>}
+          </div>
+
+          {/* Kardex por producto */}
+          <div className="rep-card">
+            <div className="rep-card__head">
+              <h2>Kardex por producto</h2>
+              {kardexProductId !== '' && (
+                <div className="rep-dl">
+                  <button type="button" onClick={() => downloadReport('/api/admin/reports/kardex/excel', { productId: kardexProductId, desde, hasta }, `kardex_${kardexProductId}.xlsx`)}><Download size={15} /> Excel</button>
+                  <button type="button" onClick={() => downloadReport('/api/admin/reports/kardex/pdf', { productId: kardexProductId, desde, hasta }, `kardex_${kardexProductId}.pdf`)}><Download size={15} /> PDF</button>
+                </div>
+              )}
+            </div>
+            <select className="adm-filter-sel rep-kx-sel" value={kardexProductId} onChange={(e) => setKardexProductId(e.target.value ? Number(e.target.value) : '')}>
+              <option value="">Elegí un producto…</option>
+              {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            {kardexProductId === '' ? (
+              <p className="adm-empty">Seleccioná un producto para ver sus movimientos de stock.</p>
+            ) : kardexLoading ? (
+              <p className="adm-empty">Cargando…</p>
+            ) : !kardex || kardex.movimientos.length === 0 ? (
+              <p className="adm-empty">Sin movimientos en el período.</p>
+            ) : (
+              <>
+                <p className="rep-stock">Stock actual: <strong>{kardex.stockActual}</strong></p>
+                <div className="adm-tablewrap">
+                  <table className="adm-table">
+                    <thead><tr><th>Fecha</th><th>Tipo</th><th>Cantidad</th><th>Motivo</th></tr></thead>
+                    <tbody>
+                      {kardex.movimientos.map((m, i) => (
+                        <tr key={i}>
+                          <td>{dateTimeFmt.format(new Date(m.fecha))}</td>
+                          <td><span className={m.tipo === 'ENTRADA' ? 'rep-mov rep-mov--entrada' : 'rep-mov rep-mov--salida'}>{m.tipo}</span></td>
+                          <td>{m.cantidad}</td>
+                          <td>{m.reason}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
           </div>
         </>
       )}

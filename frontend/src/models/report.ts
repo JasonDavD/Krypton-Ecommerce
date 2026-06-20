@@ -35,3 +35,23 @@ export interface TopProductosReport {
   limit: number;
   productos: TopProductoRow[];
 }
+
+/** Un movimiento del kardex (historial de stock). tipo: ENTRADA | SALIDA. */
+export interface KardexMovimientoRow {
+  /** Instant ISO. */
+  fecha: string;
+  tipo: string;
+  cantidad: number;
+  reason: string;
+  reference: string;
+}
+
+export interface KardexReport {
+  productId: number;
+  sku: string;
+  nombre: string;
+  stockActual: number;
+  desde: string | null;
+  hasta: string | null;
+  movimientos: KardexMovimientoRow[];
+}

@@ -1,5 +1,5 @@
 import { api } from '../../lib/api';
-import type { TopProductosReport, VentasPorPeriodoReport } from '../../models/report';
+import type { KardexReport, TopProductosReport, VentasPorPeriodoReport } from '../../models/report';
 
 /** GET /api/admin/reports/ventas — datos de ventas por período (JSON). */
 export async function getVentas(desde: string, hasta: string, granularidad: 'dia' | 'mes'): Promise<VentasPorPeriodoReport> {
@@ -14,6 +14,15 @@ export async function getTopProductos(desde: string, hasta: string, limit = 10):
   const { data } = await api.get<TopProductosReport>('/api/admin/reports/productos-vendidos', {
     params: { desde, hasta, limit },
   });
+  return data;
+}
+
+/** GET /api/admin/reports/kardex — movimientos de stock de un producto (JSON). */
+export async function getKardex(productId: number, desde?: string, hasta?: string): Promise<KardexReport> {
+  const params: Record<string, string | number> = { productId };
+  if (desde) params.desde = desde;
+  if (hasta) params.hasta = hasta;
+  const { data } = await api.get<KardexReport>('/api/admin/reports/kardex', { params });
   return data;
 }
 
