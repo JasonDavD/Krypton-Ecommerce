@@ -70,6 +70,7 @@
   border: none; cursor: pointer; background: var(--kr-orange-500); color: #fff; box-shadow: 0 10px 20px -8px rgba(243,116,2,0.6);
   transition: transform 120ms ease, filter 120ms ease; }
 .card__add:hover { filter: brightness(0.96); transform: scale(1.06); }
+.card__add--ok { background: var(--kr-success, #1f9d57); box-shadow: 0 10px 20px -8px rgba(31,157,87,0.6); }
 
 /* promo */
 .promo { position: relative; overflow: hidden; border-radius: 28px; background: radial-gradient(120% 160% at 12% 10%, #0a3a7a 0%, #03275a 50%, #021a3d 100%);

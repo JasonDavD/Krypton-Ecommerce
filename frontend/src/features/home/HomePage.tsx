@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  ArrowRight, BadgeCheck, Cpu, Gamepad2, Headphones, Keyboard, Laptop, Monitor,
+  ArrowRight, BadgeCheck, Check, Cpu, Gamepad2, Headphones, Keyboard, Laptop, Monitor,
   Percent, RotateCcw, ShieldCheck, ShoppingCart, Tag, Truck, Zap, type LucideIcon,
 } from 'lucide-react';
 import { featured } from '../catalog/products.api';
+import { useAuth } from '../../auth/AuthContext';
+import { useCart } from '../../cart/CartContext';
 import { useComingSoon } from '../../components/coming-soon/ComingSoon';
 import { PLACEHOLDER_IMAGE, type ProductResponse } from '../../models/product';
 import './home.css';
@@ -30,8 +32,12 @@ const pen = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN',
 
 export function HomePage() {
   const comingSoon = useComingSoon();
+  const { isAuthenticated } = useAuth();
+  const { addItem } = useCart();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<ProductResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addedId, setAddedId] = useState<number | null>(null); // confirmación efímera (✓)
 
   useEffect(() => {
     featured(4)
@@ -39,6 +45,18 @@ export function HomePage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // Agrega al carrito (igual que ProductCard); sin sesión, al login.
+  const handleAdd = async (productId: number) => {
+    if (!isAuthenticated) { navigate('/cuenta/ingresar'); return; }
+    try {
+      await addItem({ productId, quantity: 1 });
+      setAddedId(productId);
+      setTimeout(() => setAddedId((c) => (c === productId ? null : c)), 1400);
+    } catch {
+      // el backend valida el stock; sin feedback intrusivo en la home
+    }
+  };
 
   return (
     <div className="home">
@@ -117,8 +135,8 @@ export function HomePage() {
                   <Link to={`/catalogo/${p.id}`} className="card__name-link"><h3 className="card__name">{p.name}</h3></Link>
                   <div className="card__foot">
                     <span className="card__price">{pen.format(p.price)}</span>
-                    <button className="card__add" type="button" aria-label="Agregar al carrito" onClick={() => comingSoon.show('Carrito')}>
-                      <ShoppingCart size={18} />
+                    <button className={addedId === p.id ? 'card__add card__add--ok' : 'card__add'} type="button" aria-label="Agregar al carrito" onClick={() => handleAdd(p.id)}>
+                      {addedId === p.id ? <Check size={18} /> : <ShoppingCart size={18} />}
                     </button>
                   </div>
                 </div>
