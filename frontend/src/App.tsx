@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { ScrollToTop } from './components/ScrollToTop';
 import { MainLayout } from './app/MainLayout';
 import { HomePage } from './features/home/HomePage';
 import { LoginPage } from './features/auth/LoginPage';
@@ -25,7 +26,9 @@ import { AdminReportsPage } from './features/admin/AdminReportsPage';
  */
 function App() {
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       {/* Auth (sin chrome) */}
       <Route path="/cuenta/ingresar" element={<LoginPage />} />
       <Route path="/cuenta/registro" element={<RegisterPage />} />
@@ -51,7 +54,8 @@ function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 }
 
