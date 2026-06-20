@@ -1,25 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  ArrowRight, BadgeCheck, Check, Cpu, Gamepad2, Headphones, Keyboard, Laptop, Monitor,
-  Percent, RotateCcw, ShieldCheck, ShoppingCart, Tag, Truck, Zap, type LucideIcon,
+  ArrowRight, BadgeCheck, Check, Percent, RotateCcw, ShieldCheck, ShoppingCart,
+  Tag, Truck, Zap, type LucideIcon,
 } from 'lucide-react';
-import { featured } from '../catalog/products.api';
+import { featured, listCategories } from '../catalog/products.api';
+import { iconForCategory } from '../../components/categoryIcon';
 import { useAuth } from '../../auth/AuthContext';
 import { useCart } from '../../cart/CartContext';
 import { useComingSoon } from '../../components/coming-soon/ComingSoon';
-import { PLACEHOLDER_IMAGE, type ProductResponse } from '../../models/product';
+import { PLACEHOLDER_IMAGE, type CategoryResponse, type ProductResponse } from '../../models/product';
 import './home.css';
-
-// Categorías curadas (accesos visuales al catálogo). No son las del backend.
-const categories: { name: string; Icon: LucideIcon }[] = [
-  { name: 'Laptops', Icon: Laptop },
-  { name: 'Componentes', Icon: Cpu },
-  { name: 'Audio', Icon: Headphones },
-  { name: 'Monitores', Icon: Monitor },
-  { name: 'Periféricos', Icon: Keyboard },
-  { name: 'Gaming', Icon: Gamepad2 },
-];
 
 const perks: { Icon: LucideIcon; title: string; desc: string }[] = [
   { Icon: Truck, title: 'Envío en 24h', desc: 'Entrega express a todo el Perú' },
@@ -36,6 +27,7 @@ export function HomePage() {
   const { addItem } = useCart();
   const navigate = useNavigate();
   const [products, setProducts] = useState<ProductResponse[]>([]);
+  const [cats, setCats] = useState<CategoryResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [addedId, setAddedId] = useState<number | null>(null); // confirmación efímera (✓)
 
@@ -44,6 +36,7 @@ export function HomePage() {
       .then(setProducts)
       .catch(() => {})
       .finally(() => setLoading(false));
+    listCategories().then(setCats).catch(() => {});
   }, []);
 
   // Agrega al carrito (igual que ProductCard); sin sesión, al login.
@@ -104,12 +97,15 @@ export function HomePage() {
           <Link to="/catalogo" className="see-all">Ver todo →</Link>
         </div>
         <div className="cat-grid">
-          {categories.map((c) => (
-            <Link key={c.name} to="/catalogo" className="cat">
-              <span className="cat__ic"><c.Icon size={26} /></span>
-              <span className="cat__name">{c.name}</span>
-            </Link>
-          ))}
+          {cats.map((c) => {
+            const Icon = iconForCategory(c.name);
+            return (
+              <Link key={c.id} to={`/catalogo?categoryId=${c.id}`} className="cat">
+                <span className="cat__ic"><Icon size={26} /></span>
+                <span className="cat__name">{c.name}</span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import {
-  ChevronLeft, ChevronRight, Cpu, Gamepad2, Headphones, Headset, Keyboard,
-  Laptop, LayoutGrid, Monitor, Package, PackageSearch, Search, Speaker,
-  type LucideIcon,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Headset, LayoutGrid, PackageSearch, Search } from 'lucide-react';
 import { listCategories, search } from './products.api';
+import { iconForCategory } from '../../components/categoryIcon';
 import { ProductCard } from '../../components/ProductCard';
 import { useComingSoon } from '../../components/coming-soon/ComingSoon';
 import type { CategoryResponse, ProductResponse } from '../../models/product';
@@ -15,19 +12,6 @@ const PRICE_MAX = 5000;
 const pen = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 });
 
 type Sort = 'relevancia' | 'precio-asc' | 'precio-desc';
-
-/** Icono por nombre de categoría (heurístico, con respaldo). */
-function iconForCategory(name: string): LucideIcon {
-  const n = name.toLowerCase();
-  if (n.includes('laptop') || n.includes('notebook')) return Laptop;
-  if (n.includes('component')) return Cpu;
-  if (n.includes('audio') || n.includes('audíf') || n.includes('audif')) return Headphones;
-  if (n.includes('parlante') || n.includes('speaker')) return Speaker;
-  if (n.includes('monitor') || n.includes('pantalla')) return Monitor;
-  if (n.includes('perifér') || n.includes('perifer') || n.includes('teclado') || n.includes('mouse')) return Keyboard;
-  if (n.includes('gaming') || n.includes('gamer') || n.includes('consola')) return Gamepad2;
-  return Package;
-}
 
 /**
  * Catálogo: sidebar de filtros + grilla de productos.
