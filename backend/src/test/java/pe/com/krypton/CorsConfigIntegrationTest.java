@@ -11,8 +11,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Integración CORS: verifica que el preflight OPTIONS desde el dev server de Angular
- * (http://localhost:4200) recibe los encabezados correctos, y que orígenes no
+ * Integración CORS: verifica que el preflight OPTIONS desde el dev server de Vite/React
+ * (http://localhost:5173) recibe los encabezados correctos, y que orígenes no
  * permitidos no los obtienen. Usa la cadena de seguridad real (Testcontainers +
  * Spring Security full chain) — un @WebMvcTest con addFilters=false no serviría
  * porque CORS lo resuelven los filtros de Security.
@@ -23,11 +23,11 @@ class CorsConfigIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     MockMvc mvc;
 
-    private static final String ALLOWED_ORIGIN = "http://localhost:4200";
+    private static final String ALLOWED_ORIGIN = "http://localhost:5173";
     private static final String REJECTED_ORIGIN = "http://attacker.example.com";
 
     @Test
-    void preflight_from_angular_dev_server_returns_cors_headers() throws Exception {
+    void preflight_from_vite_dev_server_returns_cors_headers() throws Exception {
         mvc.perform(options("/api/auth/login")
                         .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
                         .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
