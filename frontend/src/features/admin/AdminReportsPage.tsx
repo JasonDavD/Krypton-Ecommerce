@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Download } from 'lucide-react';
-import { search } from '../catalog/products.api';
 import { downloadReport, getKardex, getTopProductos, getVentas } from './admin-reports.api';
+import { ProductSearchSelect } from '../../components/ProductSearchSelect';
 import type { KardexReport, TopProductosReport, VentasPorPeriodoReport } from '../../models/report';
 import type { ProductResponse } from '../../models/product';
 import './report.css';
@@ -30,9 +30,8 @@ export function AdminReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Kardex: selector de producto + sus movimientos en el período.
-  const [products, setProducts] = useState<ProductResponse[]>([]);
-  const [kardexProductId, setKardexProductId] = useState<number | ''>('');
+  // Kardex: producto elegido (autocomplete) + sus movimientos en el período.
+  const [kardexProduct, setKardexProduct] = useState<ProductResponse | null>(null);
   const [kardex, setKardex] = useState<KardexReport | null>(null);
   const [kardexLoading, setKardexLoading] = useState(false);
 
@@ -47,18 +46,15 @@ export function AdminReportsPage() {
 
   useEffect(() => { reload(); }, [reload]);
 
-  // Productos para el selector del kardex (una vez).
-  useEffect(() => { search({}, 0, 100).then((r) => setProducts(r.content)).catch(() => {}); }, []);
-
   // Kardex del producto elegido, dentro del período.
   useEffect(() => {
-    if (kardexProductId === '') { setKardex(null); return; }
+    if (!kardexProduct) { setKardex(null); return; }
     setKardexLoading(true);
-    getKardex(kardexProductId, desde, hasta)
+    getKardex(kardexProduct.id, desde, hasta)
       .then(setKardex)
       .catch(() => setKardex(null))
       .finally(() => setKardexLoading(false));
-  }, [kardexProductId, desde, hasta]);
+  }, [kardexProduct, desde, hasta]);
 
   return (
     <div className="adm">
@@ -133,19 +129,18 @@ export function AdminReportsPage() {
           <div className="rep-card">
             <div className="rep-card__head">
               <h2>Kardex por producto</h2>
-              {kardexProductId !== '' && (
+              {kardexProduct && (
                 <div className="rep-dl">
-                  <button type="button" onClick={() => downloadReport('/api/admin/reports/kardex/excel', { productId: kardexProductId, desde, hasta }, `kardex_${kardexProductId}.xlsx`)}><Download size={15} /> Excel</button>
-                  <button type="button" onClick={() => downloadReport('/api/admin/reports/kardex/pdf', { productId: kardexProductId, desde, hasta }, `kardex_${kardexProductId}.pdf`)}><Download size={15} /> PDF</button>
+                  <button type="button" onClick={() => downloadReport('/api/admin/reports/kardex/excel', { productId: kardexProduct.id, desde, hasta }, `kardex_${kardexProduct.id}.xlsx`)}><Download size={15} /> Excel</button>
+                  <button type="button" onClick={() => downloadReport('/api/admin/reports/kardex/pdf', { productId: kardexProduct.id, desde, hasta }, `kardex_${kardexProduct.id}.pdf`)}><Download size={15} /> PDF</button>
                 </div>
               )}
             </div>
-            <select className="adm-filter-sel rep-kx-sel" value={kardexProductId} onChange={(e) => setKardexProductId(e.target.value ? Number(e.target.value) : '')}>
-              <option value="">Elegí un producto…</option>
-              {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-            {kardexProductId === '' ? (
-              <p className="adm-empty">Seleccioná un producto para ver sus movimientos de stock.</p>
+            <div className="rep-kx-sel">
+              <ProductSearchSelect value={kardexProduct} onChange={setKardexProduct} placeholder="Buscá un producto…" />
+            </div>
+            {!kardexProduct ? (
+              <p className="adm-empty">Buscá y elegí un producto para ver sus movimientos de stock.</p>
             ) : kardexLoading ? (
               <p className="adm-empty">Cargando…</p>
             ) : !kardex || kardex.movimientos.length === 0 ? (
