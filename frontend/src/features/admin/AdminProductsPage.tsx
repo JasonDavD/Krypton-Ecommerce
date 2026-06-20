@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Images, Pencil, Plus, Trash2 } from 'lucide-react';
-import { search } from '../catalog/products.api';
+import { Images, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { listCategories, search } from '../catalog/products.api';
 import { deleteProduct } from './admin-products.api';
 import { ProductFormModal } from './ProductFormModal';
 import { ProductImagesModal } from './ProductImagesModal';
-import { PLACEHOLDER_IMAGE, type ProductResponse } from '../../models/product';
+import { PLACEHOLDER_IMAGE, type CategoryResponse, type ProductResponse } from '../../models/product';
 import './admin.css';
 
 const pen = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 });
@@ -19,6 +19,12 @@ export function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  // Filtros: buscador (debounced) + categoría. El backend ya soporta name/categoryId.
+  const [nameQuery, setNameQuery] = useState('');
+  const [nameDebounced, setNameDebounced] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<number | ''>('');
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+
   // editing: null cerrado · 'new' alta · ProductResponse edición. imagesFor: galería.
   const [editing, setEditing] = useState<ProductResponse | 'new' | null>(null);
   const [imagesFor, setImagesFor] = useState<ProductResponse | null>(null);
@@ -27,13 +33,22 @@ export function AdminProductsPage() {
   const reload = useCallback(() => {
     setLoading(true);
     setError(false);
-    search({}, page, PAGE_SIZE)
+    search({ name: nameDebounced || undefined, categoryId: categoryFilter || undefined }, page, PAGE_SIZE)
       .then((res) => { setProducts(res.content); setTotalPages(res.totalPages); setTotal(res.totalElements); })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, nameDebounced, categoryFilter]);
 
   useEffect(() => { reload(); }, [reload]);
+
+  // Buscador con debounce: un fetch al dejar de tipear (no uno por tecla).
+  useEffect(() => {
+    const t = setTimeout(() => setNameDebounced(nameQuery), 350);
+    return () => clearTimeout(t);
+  }, [nameQuery]);
+  // Volver a página 0 al cambiar filtros + cargar categorías para el dropdown.
+  useEffect(() => { setPage(0); }, [nameDebounced, categoryFilter]);
+  useEffect(() => { listCategories().then(setCategories).catch(() => {}); }, []);
 
   const onDelete = async (id: number) => {
     try {
@@ -57,6 +72,17 @@ export function AdminProductsPage() {
         </div>
         <button type="button" className="adm-new" onClick={() => setEditing('new')}><Plus size={18} /> Nuevo producto</button>
       </header>
+
+      <div className="adm-filters">
+        <div className="adm-search">
+          <Search size={16} />
+          <input value={nameQuery} onChange={(e) => setNameQuery(e.target.value)} placeholder="Buscar por nombre…" />
+        </div>
+        <select className="adm-filter-sel" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value ? Number(e.target.value) : '')}>
+          <option value="">Todas las categorías</option>
+          {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </div>
 
       {error && <p className="adm-alert">Ocurrió un error con la operación. Reintentá.</p>}
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { listCategories } from '../catalog/products.api';
 import { deleteCategory } from './admin-categories.api';
 import { CategoryFormModal } from './CategoryFormModal';
@@ -12,6 +12,7 @@ export function AdminCategoriesPage() {
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   const [editing, setEditing] = useState<CategoryResponse | 'new' | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
@@ -39,6 +40,9 @@ export function AdminCategoriesPage() {
     }
   };
 
+  // Filtro client-side: las categorías vienen todas, así que filtramos en memoria.
+  const filtered = categories.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()));
+
   return (
     <div className="adm">
       <header className="adm-head">
@@ -49,6 +53,13 @@ export function AdminCategoriesPage() {
         <button type="button" className="adm-new" onClick={() => setEditing('new')}><Plus size={18} /> Nueva categoría</button>
       </header>
 
+      <div className="adm-filters">
+        <div className="adm-search">
+          <Search size={16} />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre…" />
+        </div>
+      </div>
+
       {error && <p className="adm-alert">{error}</p>}
 
       <div className="adm-tablewrap">
@@ -57,7 +68,7 @@ export function AdminCategoriesPage() {
             <tr><th>Nombre</th><th>Descripción</th><th aria-label="Acciones"></th></tr>
           </thead>
           <tbody>
-            {categories.map((c) => (
+            {filtered.map((c) => (
               <tr key={c.id}>
                 <td className="adm-name">{c.name}</td>
                 <td>{c.description || <span className="adm-muted">—</span>}</td>
@@ -79,7 +90,9 @@ export function AdminCategoriesPage() {
             ))}
           </tbody>
         </table>
-        {!loading && categories.length === 0 && <p className="adm-empty">No hay categorías.</p>}
+        {!loading && filtered.length === 0 && (
+          <p className="adm-empty">{categories.length === 0 ? 'No hay categorías.' : 'No se encontraron categorías.'}</p>
+        )}
       </div>
 
       {editing && (

@@ -7,6 +7,14 @@
 
 .adm-alert { margin: 0 0 16px; padding: 12px 16px; border-radius: 12px; background: var(--kr-danger-bg); color: var(--kr-danger); font-size: 13.5px; font-weight: 600; }
 
+/* barra de filtros (buscador + selects) */
+.adm-filters { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.adm-search { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 220px; max-width: 380px; height: 42px; padding: 0 14px; background: #fff; border: 1.5px solid var(--border-subtle); border-radius: 11px; color: var(--text-faint); transition: border-color 140ms ease; }
+.adm-search:focus-within { border-color: var(--kr-blue-600); }
+.adm-search input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: var(--font-sans); font-size: 14px; color: var(--text-strong); }
+.adm-filter-sel { height: 42px; padding: 0 13px; border: 1.5px solid var(--border-subtle); border-radius: 11px; background: #fff; font-family: var(--font-sans); font-size: 14px; color: var(--text-body); cursor: pointer; }
+.adm-filter-sel:focus { outline: none; border-color: var(--kr-blue-600); }
+
 /* tabla */
 .adm-tablewrap { background: #fff; border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; }
 .adm-table { width: 100%; border-collapse: collapse; }
