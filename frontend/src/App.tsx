@@ -13,6 +13,7 @@ import { RequireAdmin } from './auth/RequireAdmin';
 import { AdminLayout } from './features/admin/AdminLayout';
 import { AdminProductsPage } from './features/admin/AdminProductsPage';
 import { AdminCategoriesPage } from './features/admin/AdminCategoriesPage';
+import { AdminOrdersPage } from './features/admin/AdminOrdersPage';
 import { Placeholder } from './components/Placeholder';
 
 /**
@@ -43,7 +44,7 @@ function App() {
             <Route path="productos" element={<AdminProductsPage />} />
             <Route path="categorias" element={<AdminCategoriesPage />} />
             <Route path="usuarios" element={<Placeholder title="Usuarios" />} />
-            <Route path="pedidos" element={<Placeholder title="Pedidos" />} />
+            <Route path="pedidos" element={<AdminOrdersPage />} />
             <Route path="reportes" element={<Placeholder title="Reportes" />} />
           </Route>
         </Route>
