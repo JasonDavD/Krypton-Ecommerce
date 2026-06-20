@@ -15,7 +15,7 @@ import { AdminProductsPage } from './features/admin/AdminProductsPage';
 import { AdminCategoriesPage } from './features/admin/AdminCategoriesPage';
 import { AdminOrdersPage } from './features/admin/AdminOrdersPage';
 import { AdminUsersPage } from './features/admin/AdminUsersPage';
-import { Placeholder } from './components/Placeholder';
+import { AdminReportsPage } from './features/admin/AdminReportsPage';
 
 /**
  * Mapa de rutas. Dos shells:
@@ -46,7 +46,7 @@ function App() {
             <Route path="categorias" element={<AdminCategoriesPage />} />
             <Route path="usuarios" element={<AdminUsersPage />} />
             <Route path="pedidos" element={<AdminOrdersPage />} />
-            <Route path="reportes" element={<Placeholder title="Reportes" />} />
+            <Route path="reportes" element={<AdminReportsPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
