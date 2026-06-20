@@ -20,16 +20,25 @@ export function AdminOrdersPage() {
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState<OrderResponse | null>(null);
 
+  // Filtros: estado + rango de fecha (el backend usa OrderSpecification).
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
   const reload = useCallback(() => {
     setLoading(true);
     setError(false);
-    getAllOrders(page, PAGE_SIZE)
+    // Las fechas se interpretan en la zona local del admin y se mandan como Instant UTC.
+    const from = dateFrom ? new Date(`${dateFrom}T00:00:00`).toISOString() : undefined;
+    const to = dateTo ? new Date(`${dateTo}T23:59:59.999`).toISOString() : undefined;
+    getAllOrders(page, PAGE_SIZE, { status: statusFilter || undefined, from, to })
       .then((res) => { setOrders(res.content); setTotalPages(res.totalPages); setTotal(res.totalElements); })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, statusFilter, dateFrom, dateTo]);
 
   useEffect(() => { reload(); }, [reload]);
+  useEffect(() => { setPage(0); }, [statusFilter, dateFrom, dateTo]);
 
   // El modal cambió el estado: refleja la fila y el propio modal (selected = order del modal).
   const onUpdated = (updated: OrderResponse) => {
@@ -45,6 +54,19 @@ export function AdminOrdersPage() {
           <p className="adm-sub">{loading ? 'Cargando…' : `${total} ${total === 1 ? 'pedido' : 'pedidos'}`}</p>
         </div>
       </header>
+
+      <div className="adm-filters">
+        <select className="adm-filter-sel" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as OrderStatus | '')}>
+          <option value="">Todos los estados</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="CONFIRMADA">Confirmada</option>
+          <option value="ENVIADO">Enviado</option>
+          <option value="ENTREGADO">Entregado</option>
+          <option value="CANCELADA">Cancelada</option>
+        </select>
+        <label className="adm-date">Desde <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} /></label>
+        <label className="adm-date">Hasta <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} /></label>
+      </div>
 
       {error && <p className="adm-alert">No se pudieron cargar los pedidos.</p>}
 

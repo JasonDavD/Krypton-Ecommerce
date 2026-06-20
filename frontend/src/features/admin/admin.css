@@ -14,6 +14,9 @@
 .adm-search input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: var(--font-sans); font-size: 14px; color: var(--text-strong); }
 .adm-filter-sel { height: 42px; padding: 0 13px; border: 1.5px solid var(--border-subtle); border-radius: 11px; background: #fff; font-family: var(--font-sans); font-size: 14px; color: var(--text-body); cursor: pointer; }
 .adm-filter-sel:focus { outline: none; border-color: var(--kr-blue-600); }
+.adm-date { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.adm-date input { height: 42px; padding: 0 12px; border: 1.5px solid var(--border-subtle); border-radius: 11px; font-family: var(--font-sans); font-size: 14px; color: var(--text-strong); }
+.adm-date input:focus { outline: none; border-color: var(--kr-blue-600); }
 
 /* tabla */
 .adm-tablewrap { background: #fff; border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; }
