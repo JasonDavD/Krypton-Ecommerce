@@ -76,6 +76,8 @@
 .adm-ostatus { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
 .adm-ostatus--pendiente { background: #fff4e5; color: #b25e02; }
 .adm-ostatus--confirmada { background: var(--kr-success-bg, #e7f7ee); color: var(--kr-success, #1f9d57); }
+.adm-ostatus--enviado { background: #e8f1ff; color: #1d5fd0; }
+.adm-ostatus--entregado { background: var(--kr-success, #1f9d57); color: #fff; }
 .adm-ostatus--cancelada { background: var(--kr-gray-100); color: var(--text-muted); }
 
 /* detalle de pedido (dentro del modal) */

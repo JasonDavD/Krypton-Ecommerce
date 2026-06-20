@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, PackageCheck, Truck, X } from 'lucide-react';
 import { updateOrderStatus } from './admin-orders.api';
 import { apiErrorMessage } from '../../lib/apiError';
 import type { OrderResponse, OrderStatus } from '../../models/order';
 
 const pen = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 });
 const dateFmt = new Intl.DateTimeFormat('es-PE', { dateStyle: 'long', timeStyle: 'short' });
-const STATUS_LABEL: Record<OrderStatus, string> = { PENDIENTE: 'Pendiente', CONFIRMADA: 'Confirmada', CANCELADA: 'Cancelada' };
+const STATUS_LABEL: Record<OrderStatus, string> = { PENDIENTE: 'Pendiente', CONFIRMADA: 'Confirmada', ENVIADO: 'Enviado', ENTREGADO: 'Entregado', CANCELADA: 'Cancelada' };
 
 /** Detalle de un pedido (admin) + cambio de estado respetando la máquina de estados. */
 export function AdminOrderDetailModal({ order, onClose, onUpdated }: {
@@ -82,9 +82,16 @@ export function AdminOrderDetailModal({ order, onClose, onUpdated }: {
           )}
           {order.status === 'CONFIRMADA' && (
             <div className="adm-od__actions">
+              <button type="button" className="adm-btn" disabled={busy} onClick={() => change('ENVIADO')}><Truck size={17} /> Marcar enviado</button>
               <button type="button" className="adm-btn-danger" disabled={busy} onClick={() => change('CANCELADA')}>Cancelar pedido</button>
             </div>
           )}
+          {order.status === 'ENVIADO' && (
+            <div className="adm-od__actions">
+              <button type="button" className="adm-btn" disabled={busy} onClick={() => change('ENTREGADO')}><PackageCheck size={17} /> Marcar entregado</button>
+            </div>
+          )}
+          {order.status === 'ENTREGADO' && <p className="adm-od__final">Pedido entregado — estado final.</p>}
           {order.status === 'CANCELADA' && <p className="adm-od__final">Pedido cancelado — estado final.</p>}
         </div>
       </div>

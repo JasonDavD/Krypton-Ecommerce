@@ -18,6 +18,8 @@
 .ord-badge { font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
 .ord-badge--pendiente { background: #fff4e5; color: #b25e02; }
 .ord-badge--confirmada { background: var(--kr-success-bg, #e7f7ee); color: var(--kr-success, #1f9d57); }
+.ord-badge--enviado { background: #e8f1ff; color: #1d5fd0; }
+.ord-badge--entregado { background: var(--kr-success, #1f9d57); color: #fff; }
 .ord-badge--cancelada { background: var(--kr-gray-100); color: var(--text-muted); }
 
 /* estados vacío / gate */

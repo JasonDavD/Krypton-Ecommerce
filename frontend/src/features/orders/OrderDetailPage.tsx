@@ -11,7 +11,8 @@ const pen = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN',
 const dateFmt = new Intl.DateTimeFormat('es-PE', { dateStyle: 'long', timeStyle: 'short' });
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
-  PENDIENTE: 'Pendiente de pago', CONFIRMADA: 'Confirmada', CANCELADA: 'Cancelada',
+  PENDIENTE: 'Pendiente de pago', CONFIRMADA: 'Confirmada',
+  ENVIADO: 'Enviado', ENTREGADO: 'Entregado', CANCELADA: 'Cancelada',
 };
 const PAY_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: 'YAPE', label: 'Yape' },

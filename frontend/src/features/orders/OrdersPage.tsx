@@ -12,6 +12,8 @@ const dateFmt = new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyl
 const STATUS_LABEL: Record<OrderStatus, string> = {
   PENDIENTE: 'Pendiente de pago',
   CONFIRMADA: 'Confirmada',
+  ENVIADO: 'Enviado',
+  ENTREGADO: 'Entregado',
   CANCELADA: 'Cancelada',
 };
 

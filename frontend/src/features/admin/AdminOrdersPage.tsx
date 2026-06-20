@@ -7,7 +7,7 @@ import './admin.css';
 
 const pen = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 });
 const dateFmt = new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' });
-const STATUS_LABEL: Record<OrderStatus, string> = { PENDIENTE: 'Pendiente', CONFIRMADA: 'Confirmada', CANCELADA: 'Cancelada' };
+const STATUS_LABEL: Record<OrderStatus, string> = { PENDIENTE: 'Pendiente', CONFIRMADA: 'Confirmada', ENVIADO: 'Enviado', ENTREGADO: 'Entregado', CANCELADA: 'Cancelada' };
 const PAGE_SIZE = 10;
 
 /** Sección de pedidos del panel admin: lista paginada + detalle con cambio de estado. */

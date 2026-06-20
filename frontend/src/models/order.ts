@@ -8,7 +8,7 @@
 export type DocumentType = 'BOLETA' | 'FACTURA';
 
 /** Estado del pedido (refleja el enum OrderStatus del backend). */
-export type OrderStatus = 'PENDIENTE' | 'CONFIRMADA' | 'CANCELADA';
+export type OrderStatus = 'PENDIENTE' | 'CONFIRMADA' | 'ENVIADO' | 'ENTREGADO' | 'CANCELADA';
 
 /** Método de pago (refleja el enum PaymentMethod del backend). */
 export type PaymentMethod = 'CREDIT_CARD' | 'YAPE' | 'EFECTIVO';
