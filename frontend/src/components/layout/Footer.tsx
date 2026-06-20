@@ -62,6 +62,10 @@ export function Footer() {
       <div className="ft-bottom">
         <div className="ft-bottom-inner">
           <span className="ft-copy">© {year} Krypton E-commerce. Todos los derechos reservados.</span>
+          <span className="ft-legal">
+            <Link to="/terminos">Términos</Link>
+            <Link to="/privacidad">Privacidad</Link>
+          </span>
           <span className="ft-secure"><ShieldCheck size={16} color="var(--kr-yellow-500)" /> Pago 100% seguro</span>
         </div>
       </div>

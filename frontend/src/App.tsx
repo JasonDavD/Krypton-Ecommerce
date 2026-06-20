@@ -10,6 +10,8 @@ import { CartPage } from './features/cart/CartPage';
 import { CheckoutPage } from './features/checkout/CheckoutPage';
 import { OrdersPage } from './features/orders/OrdersPage';
 import { OrderDetailPage } from './features/orders/OrderDetailPage';
+import { TermsPage } from './features/legal/TermsPage';
+import { PrivacyPage } from './features/legal/PrivacyPage';
 import { RequireAdmin } from './auth/RequireAdmin';
 import { AdminLayout } from './features/admin/AdminLayout';
 import { AdminProductsPage } from './features/admin/AdminProductsPage';
@@ -42,6 +44,8 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/pedidos" element={<OrdersPage />} />
         <Route path="/pedidos/:id" element={<OrderDetailPage />} />
+        <Route path="/terminos" element={<TermsPage />} />
+        <Route path="/privacidad" element={<PrivacyPage />} />
         <Route element={<RequireAdmin />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/productos" replace />} />

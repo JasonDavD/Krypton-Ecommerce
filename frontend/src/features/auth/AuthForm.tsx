@@ -208,7 +208,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
                         <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, cursor: 'pointer', userSelect: 'none' }}>
                           <input type="checkbox" checked={agree} onChange={(e) => { setAgree(e.target.checked); setErrors((p) => ({ ...p, agree: undefined })); }} style={{ width: 17, height: 17, marginTop: 2, accentColor: 'var(--kr-blue-600)', cursor: 'pointer', flex: 'none' }} />
                           <span style={{ fontSize: 13.5, color: 'var(--text-body)', lineHeight: 1.45 }}>
-                            Acepto los <a href="#" onClick={(e) => { e.preventDefault(); comingSoon.show('Términos y condiciones'); }} style={{ color: 'var(--text-link)', textDecoration: 'none', fontWeight: 600 }}>Términos</a> y la <a href="#" onClick={(e) => { e.preventDefault(); comingSoon.show('Política de privacidad'); }} style={{ color: 'var(--text-link)', textDecoration: 'none', fontWeight: 600 }}>Política de privacidad</a>.
+                            Acepto los <a href="/terminos" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-link)', textDecoration: 'none', fontWeight: 600 }}>Términos</a> y la <a href="/privacidad" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-link)', textDecoration: 'none', fontWeight: 600 }}>Política de privacidad</a>.
                           </span>
                         </label>
                         {errors.agree && <span style={errorText}>{errors.agree}</span>}
