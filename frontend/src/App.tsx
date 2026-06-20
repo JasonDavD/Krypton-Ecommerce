@@ -12,6 +12,7 @@ import { OrderDetailPage } from './features/orders/OrderDetailPage';
 import { RequireAdmin } from './auth/RequireAdmin';
 import { AdminLayout } from './features/admin/AdminLayout';
 import { AdminProductsPage } from './features/admin/AdminProductsPage';
+import { AdminCategoriesPage } from './features/admin/AdminCategoriesPage';
 import { Placeholder } from './components/Placeholder';
 
 /**
@@ -40,7 +41,7 @@ function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/productos" replace />} />
             <Route path="productos" element={<AdminProductsPage />} />
-            <Route path="categorias" element={<Placeholder title="Categorías" />} />
+            <Route path="categorias" element={<AdminCategoriesPage />} />
             <Route path="usuarios" element={<Placeholder title="Usuarios" />} />
             <Route path="pedidos" element={<Placeholder title="Pedidos" />} />
             <Route path="reportes" element={<Placeholder title="Reportes" />} />

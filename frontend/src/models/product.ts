@@ -9,6 +9,12 @@ export interface CategoryResponse {
   description: string | null;
 }
 
+/** Body para crear/editar una categoría (POST/PUT /api/admin/categories). */
+export interface CategoryRequest {
+  name: string;
+  description?: string | null;
+}
+
 /** Imagen del carrusel de un producto. */
 export interface ProductImageResponse {
   id: number;
