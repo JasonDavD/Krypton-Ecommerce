@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.com.krypton.dto.request.CheckoutRequest;
@@ -38,6 +39,7 @@ import pe.com.krypton.repository.StockMovementRepository;
 import pe.com.krypton.repository.UserRepository;
 import pe.com.krypton.service.CartService;
 import pe.com.krypton.service.OrderService;
+import pe.com.krypton.spec.OrderSpecification;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -215,10 +217,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<OrderResponse> getAllOrders(Pageable pageable) {
-        Page<Order> page = orderRepository.findAll(pageable);
-        Page<OrderResponse> responsePage = page.map(
-                o -> orderMapper.toResponse(o, orderItemRepository.findByOrder(o)));
+    public PageResponse<OrderResponse> getAllOrders(OrderStatus status, Instant from, Instant to, Pageable pageable) {
+        // Compone los filtros opcionales (null = ausente, gracias al contrato de OrderSpecification).
+        Specification<Order> spec = Specification
+                .where(OrderSpecification.hasStatus(status))
+                .and(OrderSpecification.dateBetween(from, to));
+        Page<OrderResponse> responsePage = orderRepository.findAll(spec, pageable)
+                .map(o -> orderMapper.toResponse(o, orderItemRepository.findByOrder(o)));
         return PageResponse.of(responsePage);
     }
 

@@ -1,5 +1,6 @@
 package pe.com.krypton.service;
 
+import java.time.Instant;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import pe.com.krypton.dto.request.CheckoutRequest;
@@ -30,8 +31,8 @@ public interface OrderService {
      */
     OrderResponse pay(String email, Long orderId, PaymentRequest request);
 
-    /** Admin: paginated list of ALL orders. */
-    PageResponse<OrderResponse> getAllOrders(Pageable pageable);
+    /** Admin: lista paginada de órdenes con filtros opcionales (estado, rango de fecha). */
+    PageResponse<OrderResponse> getAllOrders(OrderStatus status, Instant from, Instant to, Pageable pageable);
 
     /** Admin: single order by id. Throws ResourceNotFoundException (404) if not found. */
     OrderResponse getOrder(Long orderId);

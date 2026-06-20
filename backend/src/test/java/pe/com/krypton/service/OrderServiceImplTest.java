@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import pe.com.krypton.dto.request.CheckoutRequest;
 import pe.com.krypton.dto.request.PaymentRequest;
 import pe.com.krypton.dto.response.OrderResponse;
@@ -535,11 +536,11 @@ class OrderServiceImplTest {
         Order o = order(1L, u, BigDecimal.TEN, OrderStatus.PENDIENTE);
         Page<Order> page = new PageImpl<>(List.of(o), pageable, 1);
 
-        when(orderRepository.findAll(pageable)).thenReturn(page);
+        when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
         when(orderItemRepository.findByOrder(o)).thenReturn(List.of());
         when(orderMapper.toResponse(eq(o), any())).thenReturn(sampleResponse());
 
-        PageResponse<OrderResponse> result = service.getAllOrders(pageable);
+        PageResponse<OrderResponse> result = service.getAllOrders(null, null, null, pageable);
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.totalElements()).isEqualTo(1);
