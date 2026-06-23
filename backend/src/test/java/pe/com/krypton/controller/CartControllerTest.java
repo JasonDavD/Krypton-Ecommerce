@@ -54,7 +54,7 @@ class CartControllerTest {
 
     private CartResponse sampleCart() {
         CartItemResponse item = new CartItemResponse(
-                5L, 12L, "Laptop", "LAP-001",
+                5L, 12L, "Laptop", "https://cdn.example/laptop.jpg", "LAP-001",
                 new BigDecimal("999.90"), 2, new BigDecimal("1999.80"));
         return new CartResponse(1L, List.of(item), new BigDecimal("1999.80"), Instant.now());
     }

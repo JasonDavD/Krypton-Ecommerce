@@ -6,6 +6,7 @@ public record CartItemResponse(
         Long itemId,
         Long productId,
         String productName,
+        String imageUrl,
         String sku,
         BigDecimal price,
         int quantity,

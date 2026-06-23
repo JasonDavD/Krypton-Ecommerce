@@ -79,7 +79,7 @@ export function CartPage() {
           {cart.items.map((it) => (
             <li key={it.itemId} className="cart-item">
               <Link to={`/catalogo/${it.productId}`} className="cart-item__media">
-                <img src={PLACEHOLDER_IMAGE} alt={it.productName} />
+                <img src={it.imageUrl ?? PLACEHOLDER_IMAGE} alt={it.productName} />
               </Link>
               <div className="cart-item__info">
                 <Link to={`/catalogo/${it.productId}`} className="cart-item__name">{it.productName}</Link>
