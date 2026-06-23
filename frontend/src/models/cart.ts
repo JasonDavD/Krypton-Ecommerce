@@ -8,6 +8,8 @@ export interface CartItemResponse {
   itemId: number;
   productId: number;
   productName: string;
+  /** URL de la imagen del producto (puede ser null → placeholder). */
+  imageUrl: string | null;
   sku: string;
   price: number;
   quantity: number;
