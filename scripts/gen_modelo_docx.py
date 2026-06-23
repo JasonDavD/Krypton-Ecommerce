@@ -77,7 +77,7 @@ r.font.color.rgb = GREY
 meta = doc.add_paragraph()
 meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
 meta.add_run(
-    "E-commerce B2C de artefactos tecnológicos  ·  Spring Boot + PostgreSQL\n"
+    "E-commerce B2C de artefactos tecnológicos  ·  Spring Boot + MySQL\n"
     "CIBERTEC — EFSRT VI"
 ).font.size = Pt(11)
 
@@ -303,6 +303,6 @@ table(
     widths=[1.9, 4.4],
 )
 
-out = r"F:\CIBERTEC\VI\EFSRT V\Proyecto\Krypton-Ecommerce\Krypton_Modelo_Datos.docx"
+out = r"F:\CIBERTEC\VI\EFSRT V\Proyecto\Krypton-Ecommerce\docs\Krypton_Modelo_Datos.docx"
 doc.save(out)
 print("OK ->", out)

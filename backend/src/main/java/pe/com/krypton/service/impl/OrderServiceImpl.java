@@ -14,11 +14,13 @@ import pe.com.krypton.dto.request.CheckoutRequest;
 import pe.com.krypton.dto.request.PaymentRequest;
 import pe.com.krypton.dto.response.OrderResponse;
 import pe.com.krypton.dto.response.PageResponse;
+import pe.com.krypton.exception.ComprobanteNotAvailableException;
 import pe.com.krypton.exception.EmptyCartException;
 import pe.com.krypton.exception.InsufficientStockException;
 import pe.com.krypton.exception.InvalidDocumentException;
 import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.mapper.OrderMapper;
+import pe.com.krypton.report.ComprobanteExporter;
 import pe.com.krypton.model.Cart;
 import pe.com.krypton.model.CartItem;
 import pe.com.krypton.model.Order;
@@ -62,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartService cartService;
     private final OrderMapper orderMapper;
     private final OrderStatusPolicy statusPolicy;
+    private final ComprobanteExporter comprobanteExporter;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             OrderItemRepository orderItemRepository,
@@ -72,7 +75,8 @@ public class OrderServiceImpl implements OrderService {
                             UserRepository userRepository,
                             CartService cartService,
                             OrderMapper orderMapper,
-                            OrderStatusPolicy statusPolicy) {
+                            OrderStatusPolicy statusPolicy,
+                            ComprobanteExporter comprobanteExporter) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
@@ -83,6 +87,7 @@ public class OrderServiceImpl implements OrderService {
         this.cartService = cartService;
         this.orderMapper = orderMapper;
         this.statusPolicy = statusPolicy;
+        this.comprobanteExporter = comprobanteExporter;
     }
 
     // ─── CLIENT: checkout ────────────────────────────────────────────────────────
@@ -209,8 +214,41 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Orden no encontrada: " + orderId));
         // Pago = transición PENDIENTE → CONFIRMADA. La guarda la aplica statusPolicy.
+        // El método de pago (simulado) queda persistido en el pedido.
+        order.setPaymentMethod(request.method());
         transitionTo(order, OrderStatus.CONFIRMADA);
         return orderMapper.toResponse(order, orderItemRepository.findByOrder(order));
+    }
+
+    // ─── CLIENT / ADMIN: comprobante PDF ──────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] getMyComprobantePdf(String email, Long orderId) {
+        User user = resolveUser(email);
+        Order order = orderRepository.findByIdAndUser(orderId, user)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Orden no encontrada: " + orderId));
+        return renderComprobante(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] getComprobantePdf(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Orden no encontrada: " + orderId));
+        return renderComprobante(order);
+    }
+
+    /** El comprobante sólo se emite para pedidos pagados (no PENDIENTE ni CANCELADA). */
+    private byte[] renderComprobante(Order order) {
+        OrderStatus status = order.getStatus();
+        if (status == OrderStatus.PENDIENTE || status == OrderStatus.CANCELADA) {
+            throw new ComprobanteNotAvailableException(
+                    "El comprobante sólo está disponible para pedidos pagados.");
+        }
+        return comprobanteExporter.export(order, orderItemRepository.findByOrder(order));
     }
 
     // ─── ADMIN ───────────────────────────────────────────────────────────────────

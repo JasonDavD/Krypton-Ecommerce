@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Check, PackageCheck, Truck, X } from 'lucide-react';
-import { updateOrderStatus } from './admin-orders.api';
+import { Check, Download, PackageCheck, Truck, X } from 'lucide-react';
+import { updateOrderStatus, downloadAdminComprobante } from './admin-orders.api';
 import { apiErrorMessage } from '../../lib/apiError';
 import type { OrderResponse, OrderStatus } from '../../models/order';
 
@@ -16,6 +16,7 @@ export function AdminOrderDetailModal({ order, onClose, onUpdated }: {
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingComp, setDownloadingComp] = useState(false);
 
   const change = async (status: OrderStatus) => {
     setBusy(true);
@@ -31,6 +32,19 @@ export function AdminOrderDetailModal({ order, onClose, onUpdated }: {
 
   const isFactura = order.documentType === 'FACTURA';
   const base = order.total - order.igv;
+  const isPaid = order.status !== 'PENDIENTE' && order.status !== 'CANCELADA';
+
+  const downloadComprobante = async () => {
+    setDownloadingComp(true);
+    setError(null);
+    try {
+      await downloadAdminComprobante(order.id);
+    } catch (err) {
+      setError(apiErrorMessage(err, 'No se pudo descargar el comprobante.'));
+    } finally {
+      setDownloadingComp(false);
+    }
+  };
 
   return (
     <div className="adm-modal" role="dialog" aria-modal="true" onClick={onClose}>
@@ -72,6 +86,13 @@ export function AdminOrderDetailModal({ order, onClose, onUpdated }: {
               : <div className="adm-od__line"><span>IGV incluido</span><span>{pen.format(order.igv)}</span></div>}
             <div className="adm-od__total"><span>Total</span><span>{pen.format(order.total)}</span></div>
           </div>
+
+          {/* Comprobante: descargable sólo si el pedido está pagado. */}
+          {isPaid && (
+            <button type="button" className="adm-od__dl" disabled={downloadingComp} onClick={downloadComprobante}>
+              <Download size={16} /> {downloadingComp ? 'Generando…' : `Descargar ${isFactura ? 'factura' : 'boleta'} (PDF)`}
+            </button>
+          )}
 
           {/* Acciones según la máquina de estados (sólo transiciones legales). */}
           {order.status === 'PENDIENTE' && (

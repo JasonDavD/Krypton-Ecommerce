@@ -1,4 +1,5 @@
 import { api } from '../../lib/api';
+import { saveBlob } from '../../lib/download';
 import type { OrderResponse, OrderStatus } from '../../models/order';
 import type { PageResponse } from '../../models/product';
 
@@ -32,4 +33,10 @@ export async function getAdminOrder(id: number): Promise<OrderResponse> {
 export async function updateOrderStatus(id: number, status: OrderStatus): Promise<OrderResponse> {
   const { data } = await api.put<OrderResponse>(`/api/admin/orders/${id}/status`, { status });
   return data;
+}
+
+/** GET /api/admin/orders/{id}/comprobante — descarga el PDF de la boleta/factura (cualquier pedido pagado). */
+export async function downloadAdminComprobante(id: number): Promise<void> {
+  const { data } = await api.get<Blob>(`/api/admin/orders/${id}/comprobante`, { responseType: 'blob' });
+  saveBlob(data, `comprobante_${id}.pdf`);
 }

@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -131,6 +132,19 @@ class AdminOrderControllerTest {
         mvc.perform(put("/api/admin/orders/2/status").contentType(JSON)
                         .content("{}")) // status is @NotNull
                 .andExpect(status().isBadRequest());
+    }
+
+    // ─── GET /api/admin/orders/{id}/comprobante ───────────────────────────────────
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void comprobante_returns_200_pdf() throws Exception {
+        when(orderService.getComprobantePdf(eq(7L)))
+                .thenReturn(new byte[]{ 0x25, 0x50, 0x44, 0x46 });
+
+        mvc.perform(get("/api/admin/orders/7/comprobante"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF));
     }
 
     // ─── Auth notes ──────────────────────────────────────────────────────────────

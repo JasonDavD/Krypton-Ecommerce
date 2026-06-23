@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Check, CreditCard } from 'lucide-react';
+import { Check, CreditCard, Download, Lock } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
-import { getMyOrder, payOrder } from './orders.api';
+import { getMyOrder, payOrder, downloadMyComprobante } from './orders.api';
 import type { OrderResponse, OrderStatus, PaymentMethod } from '../../models/order';
 import './orders.css';
 import './order-detail.css';
@@ -17,8 +17,17 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 const PAY_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: 'YAPE', label: 'Yape' },
   { value: 'CREDIT_CARD', label: 'Tarjeta de crédito' },
-  { value: 'EFECTIVO', label: 'Efectivo' },
+  { value: 'DEBIT_CARD', label: 'Tarjeta de débito' },
 ];
+
+const onlyDigits = (s: string) => s.replace(/\D/g, '');
+/** Agrupa de a 4 dígitos. Acepta 13–19 dígitos (Visa/MC 16, Amex 15, Maestro 13–19). */
+const formatCardNumber = (s: string) => onlyDigits(s).slice(0, 19).replace(/(.{4})(?=.)/g, '$1 ');
+/** MM/AA mientras se escribe. */
+const formatExpiry = (s: string) => {
+  const d = onlyDigits(s).slice(0, 4);
+  return d.length <= 2 ? d : `${d.slice(0, 2)}/${d.slice(2)}`;
+};
 
 /** Detalle de un pedido: comprobante, líneas, desglose de montos y pago si está pendiente. */
 export function OrderDetailPage() {
@@ -31,6 +40,18 @@ export function OrderDetailPage() {
   const [method, setMethod] = useState<PaymentMethod>('YAPE');
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Datos del pago SIMULADO (no se envían al backend; sólo se valida el formulario).
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [yapePhone, setYapePhone] = useState('');
+  const [yapeCode, setYapeCode] = useState('');
+
+  // Descarga del comprobante.
+  const [downloadingComp, setDownloadingComp] = useState(false);
+  const [compError, setCompError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) { setLoading(false); return; }
@@ -59,16 +80,42 @@ export function OrderDetailPage() {
 
   const base = order.total - order.igv; // base imponible = total − IGV
   const isFactura = order.documentType === 'FACTURA';
+  const isPaid = order.status !== 'PENDIENTE' && order.status !== 'CANCELADA';
+
+  // Validación del formulario de pago simulado (granular, para dar feedback por campo).
+  const isCard = method === 'CREDIT_CARD' || method === 'DEBIT_CARD';
+  const cardNumberDigits = onlyDigits(cardNumber).length;
+  const cardNumberOk = cardNumberDigits >= 13 && cardNumberDigits <= 19;
+  const cardExpiryOk = /^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry);
+  const cardCvvOk = cardCvv.length >= 3; // 3 (Visa/MC) o 4 (Amex)
+  const cardNameOk = cardName.trim().length > 0;
+  const cardValid = cardNumberOk && cardExpiryOk && cardCvvOk && cardNameOk;
+  const yapeValid = yapePhone.length === 9 && yapeCode.length === 6;
+  const payValid = isCard ? cardValid : yapeValid;
 
   const pay = async () => {
+    if (!payValid) return;
     setPaying(true);
     setError(null);
     try {
+      // El pago es SIMULADO: sólo se confirma el método; los datos de tarjeta no salen del browser.
       setOrder(await payOrder(order.id, { method }));
     } catch {
       setError('No se pudo procesar el pago. Intentá de nuevo.');
     } finally {
       setPaying(false);
+    }
+  };
+
+  const downloadComprobante = async () => {
+    setDownloadingComp(true);
+    setCompError(null);
+    try {
+      await downloadMyComprobante(order.id);
+    } catch {
+      setCompError('No se pudo descargar el comprobante.');
+    } finally {
+      setDownloadingComp(false);
     }
   };
 
@@ -142,14 +189,113 @@ export function OrderDetailPage() {
                   </button>
                 ))}
               </div>
-              <button type="button" className="od-pay__btn" onClick={pay} disabled={paying}>
+
+              {isCard && (
+                <div className="od-payform">
+                  <label className="od-payform__field">
+                    <span>Número de tarjeta</span>
+                    <input
+                      inputMode="numeric"
+                      value={cardNumber}
+                      placeholder="1234 5678 9012 3456"
+                      maxLength={23}
+                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                    />
+                    {cardNumber.length > 0 && !cardNumberOk && (
+                      <small className="od-payform__err">El número debe tener entre 13 y 19 dígitos.</small>
+                    )}
+                  </label>
+                  <div className="od-payform__row">
+                    <label className="od-payform__field">
+                      <span>Vencimiento</span>
+                      <input
+                        inputMode="numeric"
+                        value={cardExpiry}
+                        placeholder="MM/AA"
+                        onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                      />
+                      {cardExpiry.length > 0 && !cardExpiryOk && (
+                        <small className="od-payform__err">Formato MM/AA (mes 01–12).</small>
+                      )}
+                    </label>
+                    <label className="od-payform__field">
+                      <span>CVV</span>
+                      <input
+                        inputMode="numeric"
+                        value={cardCvv}
+                        placeholder="123"
+                        maxLength={4}
+                        onChange={(e) => setCardCvv(onlyDigits(e.target.value).slice(0, 4))}
+                      />
+                      {cardCvv.length > 0 && !cardCvvOk && (
+                        <small className="od-payform__err">3 o 4 dígitos.</small>
+                      )}
+                    </label>
+                  </div>
+                  <label className="od-payform__field">
+                    <span>Titular de la tarjeta</span>
+                    <input
+                      type="text"
+                      value={cardName}
+                      placeholder="JUAN PEREZ"
+                      maxLength={80}
+                      onChange={(e) => setCardName(e.target.value)}
+                    />
+                  </label>
+                </div>
+              )}
+
+              {method === 'YAPE' && (
+                <div className="od-payform">
+                  <label className="od-payform__field">
+                    <span>Celular Yape</span>
+                    <input
+                      inputMode="numeric"
+                      value={yapePhone}
+                      placeholder="9 dígitos"
+                      maxLength={9}
+                      onChange={(e) => setYapePhone(onlyDigits(e.target.value).slice(0, 9))}
+                    />
+                    {yapePhone.length > 0 && yapePhone.length !== 9 && (
+                      <small className="od-payform__err">El celular debe tener 9 dígitos.</small>
+                    )}
+                  </label>
+                  <label className="od-payform__field">
+                    <span>Código de aprobación</span>
+                    <input
+                      inputMode="numeric"
+                      value={yapeCode}
+                      placeholder="6 dígitos"
+                      maxLength={6}
+                      onChange={(e) => setYapeCode(onlyDigits(e.target.value).slice(0, 6))}
+                    />
+                    {yapeCode.length > 0 && yapeCode.length !== 6 && (
+                      <small className="od-payform__err">El código debe tener 6 dígitos.</small>
+                    )}
+                  </label>
+                </div>
+              )}
+
+              <p className="od-pay__sim"><Lock size={13} /> Pago simulado — no se realiza ningún cobro real.</p>
+              <button type="button" className="od-pay__btn" onClick={pay} disabled={paying || !payValid}>
                 <CreditCard size={18} /> {paying ? 'Procesando…' : `Pagar ${pen.format(order.total)}`}
               </button>
+              {!payValid && !paying && (
+                <p className="od-pay__hint">Completá los datos del pago para continuar.</p>
+              )}
             </div>
           )}
 
-          {order.status === 'CONFIRMADA' && (
-            <div className="od-card od-paid"><Check size={18} /> Pago confirmado</div>
+          {isPaid && (
+            <div className="od-card od-paid-card">
+              {order.status === 'CONFIRMADA' && (
+                <div className="od-paid"><Check size={18} /> Pago confirmado</div>
+              )}
+              <button type="button" className="od-dl" onClick={downloadComprobante} disabled={downloadingComp}>
+                <Download size={17} /> {downloadingComp ? 'Generando…' : `Descargar ${isFactura ? 'factura' : 'boleta'}`}
+              </button>
+              {compError && <p className="ord-status od-pay__err">{compError}</p>}
+            </div>
           )}
         </aside>
       </div>
