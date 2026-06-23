@@ -3,7 +3,11 @@ package pe.com.krypton.controller;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,5 +62,21 @@ public class OrderController {
                              @PathVariable Long id,
                              @Valid @RequestBody PaymentRequest request) {
         return orderService.pay(principal.getUsername(), id, request);
+    }
+
+    /** GET /api/orders/{id}/comprobante → 200 application/pdf (boleta/factura del propio pedido pagado). */
+    @GetMapping(value = "/{id}/comprobante", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> comprobante(@AuthenticationPrincipal UserDetails principal,
+                                              @PathVariable Long id) {
+        byte[] pdf = orderService.getMyComprobantePdf(principal.getUsername(), id);
+        return pdfAttachment(pdf, "comprobante_" + id + ".pdf");
+    }
+
+    private ResponseEntity<byte[]> pdfAttachment(byte[] body, String filename) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
+        headers.setContentLength(body.length);
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 }

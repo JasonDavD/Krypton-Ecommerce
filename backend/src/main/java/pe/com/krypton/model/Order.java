@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pe.com.krypton.model.enums.DocumentType;
 import pe.com.krypton.model.enums.OrderStatus;
+import pe.com.krypton.model.enums.PaymentMethod;
 
 @Entity
 @Table(name = "orders")
@@ -56,4 +57,9 @@ public class Order {
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal total;
+
+    /** Método de pago elegido al pagar. Null mientras el pedido sigue PENDIENTE. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", length = 20)
+    private PaymentMethod paymentMethod;
 }

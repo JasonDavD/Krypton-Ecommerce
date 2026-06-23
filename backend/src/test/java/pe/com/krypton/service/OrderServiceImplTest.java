@@ -28,12 +28,14 @@ import pe.com.krypton.dto.request.CheckoutRequest;
 import pe.com.krypton.dto.request.PaymentRequest;
 import pe.com.krypton.dto.response.OrderResponse;
 import pe.com.krypton.dto.response.PageResponse;
+import pe.com.krypton.exception.ComprobanteNotAvailableException;
 import pe.com.krypton.exception.EmptyCartException;
 import pe.com.krypton.exception.InsufficientStockException;
 import pe.com.krypton.exception.InvalidDocumentException;
 import pe.com.krypton.exception.OrderStatusTransitionException;
 import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.mapper.OrderMapper;
+import pe.com.krypton.report.ComprobanteExporter;
 import pe.com.krypton.model.Cart;
 import pe.com.krypton.model.CartItem;
 import pe.com.krypton.model.Order;
@@ -72,6 +74,7 @@ class OrderServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock CartService cartService;
     @Mock OrderMapper orderMapper;
+    @Mock ComprobanteExporter comprobanteExporter;
 
     OrderServiceImpl service;
 
@@ -83,7 +86,8 @@ class OrderServiceImplTest {
         service = new OrderServiceImpl(
                 orderRepository, orderItemRepository, productRepository,
                 stockMovementRepository, cartRepository, cartItemRepository,
-                userRepository, cartService, orderMapper, statusPolicy);
+                userRepository, cartService, orderMapper, statusPolicy,
+                comprobanteExporter);
     }
 
     // ─── helpers ────────────────────────────────────────────────────────────────
@@ -484,6 +488,7 @@ class OrderServiceImplTest {
 
         assertThat(result.status()).isEqualTo("CONFIRMADA");
         assertThat(o.getStatus()).isEqualTo(OrderStatus.CONFIRMADA);
+        assertThat(o.getPaymentMethod()).isEqualTo(PaymentMethod.YAPE); // el método de pago queda persistido
         verify(orderRepository).save(o);
     }
 
@@ -511,7 +516,7 @@ class OrderServiceImplTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(u));
         when(orderRepository.findByIdAndUser(7L, u)).thenReturn(Optional.of(o));
 
-        assertThatThrownBy(() -> service.pay(email, 7L, new PaymentRequest(PaymentMethod.EFECTIVO)))
+        assertThatThrownBy(() -> service.pay(email, 7L, new PaymentRequest(PaymentMethod.DEBIT_CARD)))
                 .isInstanceOf(OrderStatusTransitionException.class);
     }
 
@@ -525,6 +530,65 @@ class OrderServiceImplTest {
 
         assertThatThrownBy(() -> service.pay(email, 8L, new PaymentRequest(PaymentMethod.CREDIT_CARD)))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    // ─── comprobante PDF ──────────────────────────────────────────────────────────
+
+    @Test
+    void getMyComprobantePdf_paid_order_returns_pdf_bytes() {
+        String email = "client@krypton.pe";
+        User u = user(3L, email);
+        Order o = order(5L, u, BigDecimal.TEN, OrderStatus.CONFIRMADA);
+        byte[] pdf = new byte[]{ 0x25, 0x50, 0x44, 0x46 };
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(u));
+        when(orderRepository.findByIdAndUser(5L, u)).thenReturn(Optional.of(o));
+        when(orderItemRepository.findByOrder(o)).thenReturn(List.of());
+        when(comprobanteExporter.export(eq(o), any())).thenReturn(pdf);
+
+        byte[] result = service.getMyComprobantePdf(email, 5L);
+
+        assertThat(result).isEqualTo(pdf);
+    }
+
+    @Test
+    void getMyComprobantePdf_pending_order_throws_ComprobanteNotAvailable() {
+        String email = "client@krypton.pe";
+        User u = user(3L, email);
+        Order o = order(6L, u, BigDecimal.TEN, OrderStatus.PENDIENTE);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(u));
+        when(orderRepository.findByIdAndUser(6L, u)).thenReturn(Optional.of(o));
+
+        assertThatThrownBy(() -> service.getMyComprobantePdf(email, 6L))
+                .isInstanceOf(ComprobanteNotAvailableException.class);
+        verify(comprobanteExporter, never()).export(any(), any());
+    }
+
+    @Test
+    void getMyComprobantePdf_IDOR_throws_ResourceNotFound() {
+        String email = "client@krypton.pe";
+        User u = user(3L, email);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(u));
+        when(orderRepository.findByIdAndUser(9L, u)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getMyComprobantePdf(email, 9L))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void getComprobantePdf_admin_paid_order_returns_pdf_bytes() {
+        Order o = order(7L, user(3L, "x@krypton.pe"), BigDecimal.TEN, OrderStatus.ENTREGADO);
+        byte[] pdf = new byte[]{ 0x25, 0x50, 0x44, 0x46 };
+
+        when(orderRepository.findById(7L)).thenReturn(Optional.of(o));
+        when(orderItemRepository.findByOrder(o)).thenReturn(List.of());
+        when(comprobanteExporter.export(eq(o), any())).thenReturn(pdf);
+
+        byte[] result = service.getComprobantePdf(7L);
+
+        assertThat(result).isEqualTo(pdf);
     }
 
     // ─── ADMIN GROUP ─────────────────────────────────────────────────────────────

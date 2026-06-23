@@ -43,4 +43,18 @@ public interface OrderService {
      * Cancelar (→ CANCELADA) repone el stock con un StockMovement(ENTRADA).
      */
     OrderResponse updateStatus(Long orderId, OrderStatus newStatus);
+
+    /**
+     * Cliente: PDF del comprobante (boleta/factura) de su propio pedido PAGADO.
+     * ResourceNotFoundException (404) si IDOR; ComprobanteNotAvailableException (409)
+     * si el pedido no está pagado (PENDIENTE/CANCELADA).
+     */
+    byte[] getMyComprobantePdf(String email, Long orderId);
+
+    /**
+     * Admin: PDF del comprobante de cualquier pedido PAGADO.
+     * ResourceNotFoundException (404) si no existe; ComprobanteNotAvailableException (409)
+     * si el pedido no está pagado.
+     */
+    byte[] getComprobantePdf(Long orderId);
 }

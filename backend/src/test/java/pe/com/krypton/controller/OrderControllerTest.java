@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,6 +24,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import pe.com.krypton.dto.response.OrderItemResponse;
 import pe.com.krypton.dto.response.OrderResponse;
+import pe.com.krypton.exception.ComprobanteNotAvailableException;
 import pe.com.krypton.exception.EmptyCartException;
 import pe.com.krypton.exception.InsufficientStockException;
 import pe.com.krypton.exception.InvalidDocumentException;
@@ -196,6 +198,29 @@ class OrderControllerTest {
         mvc.perform(post("/api/orders/3/pay").contentType(JSON)
                         .content("{}")) // method is @NotNull
                 .andExpect(status().isBadRequest());
+    }
+
+    // ─── GET /api/orders/{id}/comprobante ─────────────────────────────────────────
+
+    @Test
+    @WithMockUser(username = USER_EMAIL)
+    void comprobante_returns_200_pdf() throws Exception {
+        when(orderService.getMyComprobantePdf(eq(USER_EMAIL), eq(5L)))
+                .thenReturn(new byte[]{ 0x25, 0x50, 0x44, 0x46 });
+
+        mvc.perform(get("/api/orders/5/comprobante"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF));
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL)
+    void comprobante_unpaid_returns_409() throws Exception {
+        when(orderService.getMyComprobantePdf(eq(USER_EMAIL), eq(6L)))
+                .thenThrow(new ComprobanteNotAvailableException("El pedido no está pagado"));
+
+        mvc.perform(get("/api/orders/6/comprobante"))
+                .andExpect(status().isConflict());
     }
 
     // ─── Auth: no token → 401 (checked via integration test; web slice skips JWT) ──
