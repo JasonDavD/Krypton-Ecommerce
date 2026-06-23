@@ -101,6 +101,42 @@ public class ProductImageServiceImpl implements ProductImageService {
         }
     }
 
+    // ─── addByUrl (imagen externa por URL, sin archivo) ────────────────────────────
+
+    @Override
+    @Transactional
+    public void addByUrl(Long productId, String url) {
+        // 1. Validar URL
+        if (url == null || !(url.startsWith("http://") || url.startsWith("https://"))) {
+            throw new IllegalArgumentException("La URL debe empezar con http:// o https://");
+        }
+        if (url.length() > 500) {
+            throw new IllegalArgumentException("La URL supera el límite de 500 caracteres.");
+        }
+        // 2. Producto existe
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + productId));
+        // 3. Máximo de imágenes
+        long count = productImageRepository.countByProductId(productId);
+        if (count >= MAX_IMAGES_PER_PRODUCT) {
+            throw new IllegalArgumentException(
+                    "El producto ya tiene el máximo de " + MAX_IMAGES_PER_PRODUCT + " imágenes.");
+        }
+        // 4. Persistir fila: el path guarda la URL externa completa
+        ProductImage image = new ProductImage();
+        image.setProduct(product);
+        image.setPath(url);
+        image.setDisplayOrder((short) count);
+        boolean isFirstImage = (count == 0);
+        image.setCover(isFirstImage);
+        productImageRepository.save(image);
+        // 5. Si es la primera: sync product.imageUrl (serveUrl devuelve la URL tal cual)
+        if (isFirstImage) {
+            product.setImageUrl(serveUrl(url));
+            productRepository.save(product);
+        }
+    }
+
     // ─── delete ──────────────────────────────────────────────────────────────────
 
     @Override
@@ -138,7 +174,11 @@ public class ProductImageServiceImpl implements ProductImageService {
         }
         // non-cover + others exist: nothing to change on product
 
-        storageService.delete(image.getPath());
+        // Las imágenes externas (URL) no tienen archivo en disco que borrar.
+        String path = image.getPath();
+        if (!(path.startsWith("http://") || path.startsWith("https://"))) {
+            storageService.delete(path);
+        }
         productImageRepository.delete(image);
     }
 
@@ -212,6 +252,9 @@ public class ProductImageServiceImpl implements ProductImageService {
     // ─── private helpers ─────────────────────────────────────────────────────────
 
     private String serveUrl(String filename) {
-        return baseUrl + "/api/uploads/images/" + filename;
+        // Una URL externa (http...) se sirve tal cual; un nombre de archivo local se prefija.
+        return (filename.startsWith("http://") || filename.startsWith("https://"))
+                ? filename
+                : baseUrl + "/api/uploads/images/" + filename;
     }
 }

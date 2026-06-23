@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Star, Trash2, Upload, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Link2, Star, Trash2, Upload, X } from 'lucide-react';
 import { getById } from '../catalog/products.api';
-import { deleteImage, reorderImages, setCover, uploadImage } from './admin-products.api';
+import { addImageByUrl, deleteImage, reorderImages, setCover, uploadImage } from './admin-products.api';
 import type { ProductImageResponse, ProductResponse } from '../../models/product';
 
 /** Modal de galería: subir (N archivos), reordenar (↑/↓), marcar portada y borrar. */
@@ -14,6 +14,7 @@ export function ProductImagesModal({ product, onClose, onChanged }: {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [url, setUrl] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(() => {
@@ -47,6 +48,13 @@ export function ProductImagesModal({ product, onClose, onChanged }: {
     if (fileRef.current) fileRef.current.value = '';
   };
 
+  const addByUrl = async () => {
+    const u = url.trim();
+    if (!u) return;
+    await run(() => addImageByUrl(product.id, u));
+    setUrl('');
+  };
+
   // Reordena localmente y manda el array COMPLETO de ids (el backend lo exige).
   const move = (idx: number, dir: -1 | 1) => {
     const j = idx + dir;
@@ -72,6 +80,20 @@ export function ProductImagesModal({ product, onClose, onChanged }: {
             <Upload size={16} /> Subir imágenes
           </button>
           <span className="adm-up__hint">JPG/PNG, máx 5MB c/u</span>
+        </div>
+
+        <div className="adm-up adm-up--url">
+          <input
+            type="url"
+            className="adm-up__input"
+            placeholder="https://…/imagen.jpg"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') addByUrl(); }}
+          />
+          <button type="button" className="adm-btn-ghost" disabled={busy || !url.trim()} onClick={addByUrl}>
+            <Link2 size={16} /> Agregar por URL
+          </button>
         </div>
 
         {loading ? (

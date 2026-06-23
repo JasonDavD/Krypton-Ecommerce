@@ -29,6 +29,11 @@ export async function uploadImage(productId: number, file: File): Promise<void> 
   await api.post(`/api/admin/products/${productId}/images`, form);
 }
 
+/** POST .../images/by-url — agrega una imagen externa por URL (201). */
+export async function addImageByUrl(productId: number, url: string): Promise<void> {
+  await api.post(`/api/admin/products/${productId}/images/by-url`, { url });
+}
+
 /** DELETE .../images/{imageId} — quita una imagen (204). */
 export async function deleteImage(productId: number, imageId: number): Promise<void> {
   await api.delete(`/api/admin/products/${productId}/images/${imageId}`);

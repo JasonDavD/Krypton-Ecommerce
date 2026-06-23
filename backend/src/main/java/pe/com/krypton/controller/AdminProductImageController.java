@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.Valid;
+import pe.com.krypton.dto.request.ProductImageUrlRequest;
 import pe.com.krypton.service.ProductImageService;
 
 /**
@@ -35,6 +37,14 @@ public class AdminProductImageController {
     public void upload(@PathVariable Long productId,
                        @RequestParam("file") MultipartFile file) {
         productImageService.upload(productId, file);
+    }
+
+    /** Add an image to the product by external URL (no file upload). */
+    @PostMapping("/by-url")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addByUrl(@PathVariable Long productId,
+                         @Valid @RequestBody ProductImageUrlRequest request) {
+        productImageService.addByUrl(productId, request.url());
     }
 
     /** Delete an image by its ID. */
