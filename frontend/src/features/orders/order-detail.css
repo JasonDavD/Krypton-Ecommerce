@@ -14,6 +14,27 @@
 .od-card { background: #fff; border: 1px solid var(--border-subtle); border-radius: 16px; padding: 22px; }
 .od-card h2 { font-family: var(--font-display); font-weight: 800; font-size: 16px; color: var(--text-strong); margin: 0 0 16px; }
 
+/* timeline de estado del pedido */
+.otl { display: flex; list-style: none; margin: 0 0 24px; padding: 22px 18px 18px; background: #fff; border: 1px solid var(--border-subtle); border-radius: 16px; }
+.otl__step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 9px; position: relative; text-align: center; }
+.otl__step:not(:first-child)::before { content: ''; position: absolute; top: 15px; left: -50%; width: 100%; height: 2px; background: var(--border-subtle); }
+.otl__step--done:not(:first-child)::before,
+.otl__step--current:not(:first-child)::before { background: var(--kr-success, #1f9d57); }
+.otl__dot { position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--kr-gray-50); border: 2px solid var(--border-subtle); color: var(--text-faint); }
+.otl__step--done .otl__dot { background: var(--kr-success, #1f9d57); border-color: var(--kr-success, #1f9d57); color: #fff; }
+.otl__step--current .otl__dot { background: #fff; border-color: var(--kr-navy-800); color: var(--kr-navy-800); box-shadow: 0 0 0 4px rgba(31, 58, 95, 0.12); }
+.otl__label { font-size: 12px; color: var(--text-faint); max-width: 92px; }
+.otl__step--done .otl__label { color: var(--text-body); }
+.otl__step--current .otl__label { color: var(--text-strong); font-weight: 700; }
+
+.otl--cancelled { display: flex; align-items: center; gap: 12px; }
+.otl__cancel-ic { display: flex; color: var(--kr-danger); }
+.otl__cancel-txt { display: flex; flex-direction: column; }
+.otl__cancel-txt strong { color: var(--text-strong); font-size: 14px; }
+.otl__cancel-txt span { color: var(--text-muted); font-size: 12.5px; }
+
+@media (max-width: 560px) { .otl__label { font-size: 10.5px; } }
+
 /* comprobante */
 .od-doc__row { display: flex; align-items: center; justify-content: space-between; font-size: 13.5px; margin-bottom: 9px; }
 .od-doc__row span { color: var(--text-muted); }
