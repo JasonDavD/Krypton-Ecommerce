@@ -28,6 +28,7 @@ export function HomePage() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<ProductResponse[]>([]);
   const [cats, setCats] = useState<CategoryResponse[]>([]);
+  const [showAllCats, setShowAllCats] = useState(false);
   const [loading, setLoading] = useState(true);
   const [addedId, setAddedId] = useState<number | null>(null); // confirmación efímera (✓)
 
@@ -100,7 +101,7 @@ export function HomePage() {
           <Link to="/catalogo" className="see-all">Ver todo →</Link>
         </div>
         <div className="cat-grid">
-          {cats.map((c) => {
+          {(showAllCats ? cats : cats.slice(0, 6)).map((c) => {
             const Icon = iconForCategory(c.name);
             return (
               <Link key={c.id} to={`/catalogo?categoryId=${c.id}`} className="cat">
@@ -110,6 +111,13 @@ export function HomePage() {
             );
           })}
         </div>
+        {cats.length > 6 && (
+          <div className="cat-more">
+            <button type="button" onClick={() => setShowAllCats((v) => !v)}>
+              {showAllCats ? 'Ver menos' : `Ver todas las categorías (${cats.length})`}
+            </button>
+          </div>
+        )}
       </section>
 
       {/* FEATURED (datos reales) */}

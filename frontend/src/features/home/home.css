@@ -53,7 +53,10 @@
 .cat__ic { display: inline-flex; align-items: center; justify-content: center; width: 58px; height: 58px; border-radius: 16px;
   background: var(--kr-gray-100); color: var(--kr-navy-800); transition: background 200ms ease, color 200ms ease; }
 .cat:hover .cat__ic { background: var(--kr-blue-600); color: #fff; }
-.cat__name { font-size: 14.5px; font-weight: 700; color: var(--text-strong); }
+.cat__name { font-size: 14.5px; font-weight: 700; color: var(--text-strong); text-align: center; line-height: 1.25; }
+.cat-more { display: flex; justify-content: center; margin-top: 22px; }
+.cat-more button { height: 44px; padding: 0 24px; border: 1.5px solid var(--border-subtle); border-radius: 999px; background: #fff; font-family: var(--font-sans); font-weight: 700; font-size: 14px; color: var(--kr-navy-800); cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }
+.cat-more button:hover { background: var(--kr-gray-50); border-color: var(--kr-blue-500); }
 
 /* products */
 .prod-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }

@@ -31,8 +31,11 @@ import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.mapper.ProductMapper;
 import pe.com.krypton.model.Category;
 import pe.com.krypton.model.Product;
+import pe.com.krypton.model.StockMovement;
+import pe.com.krypton.model.enums.MovementType;
 import pe.com.krypton.repository.CategoryRepository;
 import pe.com.krypton.repository.ProductRepository;
+import pe.com.krypton.repository.StockMovementRepository;
 import pe.com.krypton.service.impl.ProductServiceImpl;
 
 /**
@@ -44,12 +47,14 @@ class ProductServiceImplTest {
 
     @Mock ProductRepository productRepository;
     @Mock CategoryRepository categoryRepository;
+    @Mock StockMovementRepository stockMovementRepository;
 
     ProductServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new ProductServiceImpl(productRepository, categoryRepository, new ProductMapper("http://localhost:8080"));
+        service = new ProductServiceImpl(productRepository, categoryRepository,
+                new ProductMapper("http://localhost:8080"), stockMovementRepository);
     }
 
     // ─── helpers ────────────────────────────────────────────────────────────────
@@ -219,13 +224,14 @@ class ProductServiceImplTest {
     // ─── update ─────────────────────────────────────────────────────────────────
 
     @Test
-    void should_update_product_fields_but_never_change_stock() {
+    void should_update_fields_without_kardex_movement_when_stock_unchanged() {
         Product existing = product(1L, "OLD-SKU", true);
-        existing.setStock(42); // stock must stay 42 after update
+        existing.setStock(42);
         Category cat = category(1L);
 
+        // Mismo stock (42) → no debe generar movimiento de kardex.
         ProductRequest req = new ProductRequest("NEW-SKU", "New Name", "New Desc",
-                new BigDecimal("199.99"), 999 /* ignored */, "http://img.png", 1L);
+                new BigDecimal("199.99"), 42, "http://img.png", 1L);
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(productRepository.existsBySkuAndIdNot("NEW-SKU", 1L)).thenReturn(false);
@@ -236,11 +242,34 @@ class ProductServiceImplTest {
 
         assertThat(result.name()).isEqualTo("New Name");
         assertThat(result.sku()).isEqualTo("NEW-SKU");
-        assertThat(result.stock()).isEqualTo(42); // unchanged — stock is READ-ONLY after create
+        assertThat(result.stock()).isEqualTo(42);
+        verify(stockMovementRepository, never()).save(any());
+    }
 
-        ArgumentCaptor<Product> saved = ArgumentCaptor.forClass(Product.class);
-        verify(productRepository).save(saved.capture());
-        assertThat(saved.getValue().getStock()).isEqualTo(42);
+    @Test
+    void should_adjust_stock_and_record_kardex_movement_when_stock_changes() {
+        Product existing = product(1L, "OLD-SKU", true);
+        existing.setStock(42);
+        Category cat = category(1L);
+
+        // 42 → 50: debe registrar una ENTRADA de 8 y dejar el stock cacheado en 50.
+        ProductRequest req = new ProductRequest("OLD-SKU", "New Name", "New Desc",
+                new BigDecimal("199.99"), 50, null, 1L);
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(productRepository.existsBySkuAndIdNot("OLD-SKU", 1L)).thenReturn(false);
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(cat));
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ProductResponse result = service.update(1L, req);
+
+        assertThat(result.stock()).isEqualTo(50);
+        assertThat(existing.getStock()).isEqualTo(50);
+
+        ArgumentCaptor<StockMovement> mov = ArgumentCaptor.forClass(StockMovement.class);
+        verify(stockMovementRepository).save(mov.capture());
+        assertThat(mov.getValue().getType()).isEqualTo(MovementType.ENTRADA);
+        assertThat(mov.getValue().getQuantity()).isEqualTo(8);
     }
 
     @Test
