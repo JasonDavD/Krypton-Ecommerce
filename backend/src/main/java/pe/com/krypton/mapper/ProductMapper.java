@@ -69,11 +69,18 @@ public class ProductMapper {
     // ─── private helpers ─────────────────────────────────────────────────────────
 
     private ProductImageResponse toImageResponse(ProductImage image) {
-        String url = baseUrl + "/api/uploads/images/" + image.getPath();
+        String url = resolveImageUrl(image.getPath());
         return new ProductImageResponse(
                 image.getId(),
                 url,
                 image.getDisplayOrder(),
                 image.isCover());
+    }
+
+    /** Una URL externa (http...) se sirve tal cual; un nombre de archivo local se prefija. */
+    private String resolveImageUrl(String path) {
+        return (path.startsWith("http://") || path.startsWith("https://"))
+                ? path
+                : baseUrl + "/api/uploads/images/" + path;
     }
 }

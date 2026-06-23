@@ -14,6 +14,12 @@ public interface ProductImageService {
     void upload(Long productId, MultipartFile file);
 
     /**
+     * Agrega una imagen externa por URL (sin archivo en disco). La URL debe empezar
+     * con http:// o https:// y se guarda tal cual. La primera imagen queda como portada.
+     */
+    void addByUrl(Long productId, String url);
+
+    /**
      * Deletes an image by ID. Cover-promotion algorithm:
      * - non-cover deleted → others untouched
      * - cover deleted + others exist → promote next by lowest display_order
