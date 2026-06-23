@@ -45,6 +45,8 @@
 .adm-actions button { width: 34px; height: 34px; border: 1px solid var(--border-subtle); border-radius: 9px; background: #fff; color: var(--text-muted); cursor: pointer; margin-left: 6px; transition: background 140ms ease, color 140ms ease, border-color 140ms ease; vertical-align: middle; }
 .adm-actions button:hover:not(:disabled) { background: var(--kr-gray-100); color: var(--kr-navy-800); }
 .adm-actions .adm-del:hover:not(:disabled) { background: var(--kr-danger-bg); color: var(--kr-danger); border-color: var(--kr-danger); }
+/* "Desactivar/Activar" es un botón de TEXTO, no un botón-ícono: ancho natural, no 34px. */
+.adm-actions .adm-toggle { width: auto; color: var(--text-body); }
 .adm-confirm { font-size: 13px; font-weight: 600; color: var(--text-body); }
 .adm-confirm__yes, .adm-confirm__no { width: auto !important; padding: 0 12px; height: 30px !important; font-weight: 700; }
 .adm-confirm__yes { color: #fff !important; background: var(--kr-danger) !important; border-color: var(--kr-danger) !important; }
