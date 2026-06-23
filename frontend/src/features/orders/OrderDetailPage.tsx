@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Check, CreditCard, Download, Lock } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { getMyOrder, payOrder, downloadMyComprobante } from './orders.api';
+import { OrderStatusTimeline } from './OrderStatusTimeline';
 import type { OrderResponse, OrderStatus, PaymentMethod } from '../../models/order';
 import './orders.css';
 import './order-detail.css';
@@ -130,6 +131,8 @@ export function OrderDetailPage() {
         </div>
         <span className={`ord-badge ord-badge--${order.status.toLowerCase()}`}>{STATUS_LABEL[order.status]}</span>
       </header>
+
+      <OrderStatusTimeline status={order.status} />
 
       <div className="od-grid">
         <section className="od-main">
