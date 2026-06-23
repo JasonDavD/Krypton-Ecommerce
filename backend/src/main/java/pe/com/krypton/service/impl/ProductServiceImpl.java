@@ -1,6 +1,7 @@
 package pe.com.krypton.service.impl;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -14,8 +15,11 @@ import pe.com.krypton.exception.ResourceNotFoundException;
 import pe.com.krypton.mapper.ProductMapper;
 import pe.com.krypton.model.Category;
 import pe.com.krypton.model.Product;
+import pe.com.krypton.model.StockMovement;
+import pe.com.krypton.model.enums.MovementType;
 import pe.com.krypton.repository.CategoryRepository;
 import pe.com.krypton.repository.ProductRepository;
+import pe.com.krypton.repository.StockMovementRepository;
 import pe.com.krypton.service.ProductService;
 import pe.com.krypton.spec.ProductSpecification;
 
@@ -25,13 +29,16 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private final StockMovementRepository stockMovementRepository;
 
     public ProductServiceImpl(ProductRepository productRepository,
                                CategoryRepository categoryRepository,
-                               ProductMapper productMapper) {
+                               ProductMapper productMapper,
+                               StockMovementRepository stockMovementRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productMapper = productMapper;
+        this.stockMovementRepository = stockMovementRepository;
     }
 
     @Override
@@ -99,7 +106,23 @@ public class ProductServiceImpl implements ProductService {
         product.setName(request.name());
         product.setDescription(request.description());
         product.setPrice(request.price());
-        // stock is READ-ONLY after creation — intentionally NOT updated here
+        // Ajuste de stock: si el valor pedido difiere del cacheado, se registra un
+        // movimiento en el kardex (ENTRADA si sube, SALIDA si baja) por la diferencia y
+        // se actualiza el valor cacheado — dentro de la misma transacción (stock↔kardex cuadran).
+        Integer requestedStock = request.stock();
+        if (requestedStock != null && requestedStock != product.getStock()) {
+            int delta = requestedStock - product.getStock();
+            StockMovement movement = new StockMovement();
+            movement.setProduct(product);
+            movement.setType(delta > 0 ? MovementType.ENTRADA : MovementType.SALIDA);
+            movement.setQuantity(Math.abs(delta));
+            movement.setReason("Ajuste manual de stock");
+            movement.setReference("ADJUST");
+            movement.setCreatedAt(Instant.now());
+            movement.setCreatedBy(null);
+            stockMovementRepository.save(movement);
+            product.setStock(requestedStock);
+        }
         product.setImageUrl(request.imageUrl());
         product.setCategory(category);
 
