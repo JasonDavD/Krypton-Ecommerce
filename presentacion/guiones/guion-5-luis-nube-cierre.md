@@ -12,7 +12,7 @@
 "La aplicación está dividida en tres servicios, todos en la nube y en capa gratuita: el **backend** corre en **Render**, dentro de un contenedor Docker, con su perfil de producción y sus variables de entorno; la **base de datos** es un **MySQL gestionado en Aiven**, donde Flyway aplicó solo todas las migraciones al primer arranque; y el **frontend** está en **Vercel**, como build estático, apuntando al backend por variable de entorno. La tienda está viva en **krypton-three-iota.vercel.app**."
 
 ### [Slide: Versionamiento y metodología]
-"En cuanto a la gestión del proyecto: trabajamos con **Git y GitHub**, una rama por funcionalidad y Pull Requests revisables antes de integrar; usamos **commits convencionales** —feat, fix, chore, docs— para que la historia se entienda; y llevamos el trabajo de forma **ágil**, por incrementos, con un tablero Kanban."
+"En cuanto a la gestión del proyecto: trabajamos con **Git y GitHub**, una rama por funcionalidad y Pull Requests revisables antes de integrar; usamos **commits convencionales** —feat, fix, chore, docs— para que la historia se entienda; y avanzamos **por incrementos**, integrando cada funcionalidad por su propio Pull Request."
 
 ### [Slide: Demo en vivo]
 "Ahora sí, veámoslo funcionando."
