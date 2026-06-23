@@ -2,7 +2,7 @@
 # scripts/setup-tests.ps1
 #
 # Configura ~/.testcontainers.properties para que los tests de integracion
-# (Testcontainers + Postgres) encuentren el daemon de Docker en ESTA maquina.
+# (Testcontainers + MySQL) encuentren el daemon de Docker en ESTA maquina.
 #
 # Por que existe:
 #   Docker Desktop con Engine 29+ no escucha en el pipe por defecto que busca
