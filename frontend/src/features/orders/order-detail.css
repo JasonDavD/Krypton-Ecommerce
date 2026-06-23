@@ -48,11 +48,13 @@
 /* formulario de pago simulado */
 .od-payform { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
 .od-payform__row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.od-payform__field { display: flex; flex-direction: column; gap: 6px; }
+.od-payform__field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .od-payform__field span { font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
-.od-payform__field input { height: 42px; padding: 0 12px; border: 1.5px solid var(--border-subtle); border-radius: 10px; font-family: var(--font-sans); font-size: 14px; color: var(--text-strong); background: #fff; transition: border-color 140ms ease; }
+.od-payform__field input { width: 100%; box-sizing: border-box; height: 42px; padding: 0 12px; border: 1.5px solid var(--border-subtle); border-radius: 10px; font-family: var(--font-sans); font-size: 14px; color: var(--text-strong); background: #fff; transition: border-color 140ms ease; }
 .od-payform__field input:focus { outline: none; border-color: var(--kr-navy-800); }
+.od-payform__err { font-size: 11.5px; color: var(--kr-danger); }
 .od-pay__sim { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-faint); margin: 0 0 14px; }
+.od-pay__hint { font-size: 12px; color: var(--text-faint); text-align: center; margin: 8px 0 0; }
 
 /* descarga del comprobante */
 .od-dl { width: 100%; height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 1.5px solid var(--kr-navy-800); border-radius: 12px; background: #fff; color: var(--kr-navy-800); font-family: var(--font-sans); font-weight: 700; font-size: 14px; cursor: pointer; transition: background 120ms ease; }
