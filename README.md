@@ -1,8 +1,19 @@
 # Krypton E-commerce
 
 E-commerce B2C de artefactos tecnológicos (dispositivos y componentes). Proyecto
-académico **CIBERTEC — EFSRT VI**. Monorepo: **backend** Spring Boot 3 + Java 17,
+académico **CIBERTEC — EFSRT V**. Monorepo: **backend** Spring Boot 3 + Java 17,
 **frontend** React 19 + Vite + TypeScript, persistencia en **MySQL 8**.
+
+## Demo en vivo
+
+La aplicación está desplegada en la nube:
+
+- **Tienda (frontend):** https://krypton-three-iota.vercel.app
+- **API (backend):** https://krypton-backend-ixai.onrender.com
+- **Panel admin:** `/admin` con `admin@krypton.pe` / `Admin123!`
+
+> El backend corre en el plan gratuito de Render y se "duerme" tras la inactividad:
+> la primera carga puede tardar ~30–60 s en despertar.
 
 ## Estructura del monorepo
 
@@ -16,13 +27,15 @@ Krypton-Ecommerce
 │   ├── src/features/                   # catálogo, carrito, checkout, pedidos, admin, ...
 │   └── src/components, models, auth/   # compartidos
 ├── docs/                               # documentación del proyecto
+├── presentacion/                       # deck de exposición (HTML) + guiones por expositor
+├── anexos/                             # anexos del informe (DER, arquitectura, capturas)
 └── docker-compose.yml                  # MySQL 8 local
 ```
 
 > **¿Por qué monorepo?** Un solo repo con `backend/` y `frontend/` lado a lado.
-> Cada carpeta se construye y se despliega **por separado** (el back a Render/
-> Railway, el front a Vercel/Netlify). Monorepo es dónde VIVE el código; el
-> despliegue es independiente.
+> Cada carpeta se despliega **por separado**: el backend en **Render** (Docker), la
+> base de datos en **Aiven** (MySQL gestionado) y el frontend en **Vercel**. La guía
+> completa de despliegue está en [docs/deploy.md](docs/deploy.md).
 
 ## Stack
 
@@ -34,6 +47,18 @@ Krypton-Ecommerce
 | Seguridad | Spring Security + JWT |
 | Tests | JUnit 5, Mockito, Testcontainers (MySQL real) |
 | Arquitectura | Capas con interfaces — ver [docs/arquitectura-backend.md](docs/arquitectura-backend.md) |
+
+## Funcionalidades
+
+**Cliente:** registro/login con JWT · catálogo con búsqueda y filtros · carrito ·
+checkout con cálculo de envío e IGV y elección de comprobante (boleta/factura) · pago
+**simulado** (Yape / tarjeta de crédito o débito) · descarga del comprobante en **PDF** ·
+seguimiento del estado del pedido (timeline) e historial de compras.
+
+**Administración (`/admin`):** CRUD de productos (con imágenes), categorías, gestión de
+pedidos y de usuarios, y un dashboard de **reportes** (KPIs + gráficos) exportables a
+**PDF y Excel**. El stock se controla con un **kardex** (historial de movimientos), y el
+**checkout es una transacción atómica** (descuenta stock y registra el movimiento, todo o nada).
 
 ## Requisitos
 
@@ -126,3 +151,4 @@ cd frontend && npm run build
 | [docs/arquitectura-backend.md](docs/arquitectura-backend.md) | Arquitectura por capas (leer antes de codear) |
 | [docs/modelo-datos.md](docs/modelo-datos.md) | Modelo de datos |
 | [docs/modelo.dbml](docs/modelo.dbml) | Diagrama ER (fuente única — dbdiagram.io) |
+| [docs/deploy.md](docs/deploy.md) | Guía de despliegue en la nube (Render · Aiven · Vercel) |
