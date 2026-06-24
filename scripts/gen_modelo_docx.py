@@ -78,7 +78,7 @@ meta = doc.add_paragraph()
 meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
 meta.add_run(
     "E-commerce B2C de artefactos tecnológicos  ·  Spring Boot + MySQL\n"
-    "CIBERTEC — EFSRT VI"
+    "CIBERTEC — EFSRT V"
 ).font.size = Pt(11)
 
 doc.add_paragraph()

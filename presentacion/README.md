@@ -1,4 +1,4 @@
-# Presentación — Krypton E-commerce (EFSRT VI)
+# Presentación — Krypton E-commerce (EFSRT V)
 
 Material para la exposición del proyecto. Todo autocontenido.
 

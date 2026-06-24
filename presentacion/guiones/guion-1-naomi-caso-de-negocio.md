@@ -6,7 +6,7 @@
 ---
 
 ### [Slide: Portada]
-"Buenas tardes a todos. Somos el equipo de **Krypton E-commerce**, un proyecto del curso EFSRT VI de CIBERTEC. Lo desarrollamos entre cinco: Billy, Jason, Edward, Luis y yo, Naomi. Lo que les vamos a mostrar es una **plataforma de comercio electrónico de n capas desplegada en la nube** para una empresa de retail de tecnología."
+"Buenas tardes a todos. Somos el equipo de **Krypton E-commerce**, un proyecto del curso EFSRT V de CIBERTEC. Lo desarrollamos entre cinco: Billy, Jason, Edward, Luis y yo, Naomi. Lo que les vamos a mostrar es una **plataforma de comercio electrónico de n capas desplegada en la nube** para una empresa de retail de tecnología."
 
 ### [Slide: Agenda]
 "La presentación tiene cinco partes: yo arranco con el caso de negocio; Billy sigue con la arquitectura y el modelo de datos; Jason explica el backend; Edward, el frontend; y Luis cierra con el despliegue en la nube y una demo en vivo."

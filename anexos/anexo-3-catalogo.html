@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Anexo 3a — Catálogo (mockup hi-fi) · Krypton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#03275A; --navy-deep:#021a3d; --blue:#1A7DD7; --blue-600:#1565b8; --orange:#F37402; --red-orange:#F34605;
+    --yellow:#F2B809; --page:#eef1f6; --card:#fff; --ink:#03275A; --text:#26415f; --muted:#5b6b82; --faint:#8a98ab;
+    --border:#e3e9f1; --gray-50:#f5f7fa; --gray-100:#eef2f7;
+    --sans:'Kanit',system-ui,sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:var(--sans); background:var(--page); color:var(--text); }
+  a { text-decoration:none; color:inherit; }
+
+  .promo { background:linear-gradient(90deg,var(--orange),var(--red-orange)); color:#fff; text-align:center; font-size:13.5px; font-weight:600; padding:9px; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .nav { background:#fff; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:10; }
+  .nav__in { max-width:1200px; margin:0 auto; height:68px; display:flex; align-items:center; gap:30px; padding:0 28px; }
+  .brand { font-weight:900; font-style:italic; font-size:26px; letter-spacing:-.02em; color:var(--navy); }
+  .brand .a { color:var(--orange); }
+  .nav__links { display:flex; gap:24px; font-size:14.5px; font-weight:600; color:var(--text); }
+  .nav__links a:hover { color:var(--navy); }
+  .nav__links .drop { display:inline-flex; align-items:center; gap:4px; }
+  .nav__right { margin-left:auto; display:flex; align-items:center; gap:14px; }
+  .iconbtn { width:42px; height:42px; border-radius:12px; border:1px solid var(--border); background:#fff; display:inline-flex; align-items:center; justify-content:center; color:var(--navy); cursor:pointer; position:relative; }
+  .badge { position:absolute; top:-5px; right:-5px; background:var(--orange); color:#fff; font-size:11px; font-weight:800; width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .user { font-size:13.5px; font-weight:600; color:var(--muted); }
+
+  .wrap { max-width:1200px; margin:0 auto; padding:30px 28px 64px; }
+  .crumb { font-size:13px; color:var(--faint); margin-bottom:14px; }
+  .head { display:flex; align-items:baseline; gap:12px; margin-bottom:24px; }
+  .head h1 { font-weight:900; font-size:34px; letter-spacing:-.02em; color:var(--navy); }
+  .head .count { color:var(--muted); font-size:14px; }
+
+  .layout { display:grid; grid-template-columns:248px 1fr; gap:26px; align-items:start; }
+
+  .filters { background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px; position:sticky; top:90px; }
+  .filters h3 { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); font-weight:800; margin:0 0 12px; }
+  .search { display:flex; align-items:center; gap:8px; height:42px; padding:0 12px; border:1.5px solid var(--border); border-radius:11px; color:var(--faint); margin-bottom:22px; }
+  .search input { border:none; outline:none; font-family:var(--sans); font-size:14px; color:var(--ink); width:100%; }
+  .cat-list { list-style:none; display:flex; flex-direction:column; gap:4px; margin-bottom:22px; }
+  .cat-list li { padding:9px 12px; border-radius:10px; font-size:14px; font-weight:600; color:var(--text); cursor:pointer; display:flex; justify-content:space-between; }
+  .cat-list li:hover { background:var(--gray-50); }
+  .cat-list li.on { background:var(--navy); color:#fff; }
+  .cat-list li span { color:var(--faint); font-weight:500; }
+  .cat-list li.on span { color:#cfe0f3; }
+  .price small { color:var(--muted); font-size:13px; }
+  .slider { height:6px; background:var(--gray-100); border-radius:999px; margin:14px 0 6px; position:relative; }
+  .slider::before { content:""; position:absolute; left:0; width:62%; height:100%; background:var(--blue); border-radius:999px; }
+  .slider::after { content:""; position:absolute; left:60%; top:50%; transform:translateY(-50%); width:16px; height:16px; background:#fff; border:3px solid var(--blue); border-radius:50%; }
+  .price-row { display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:var(--navy); }
+
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .card { background:#fff; border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:transform .2s, box-shadow .2s; display:flex; flex-direction:column; }
+  .card:hover { transform:translateY(-3px); box-shadow:0 18px 36px -18px rgba(3,39,90,.3); border-color:var(--blue); }
+  .card__media { aspect-ratio:1/1; background:linear-gradient(160deg,var(--gray-50),#e7f0fb); display:flex; align-items:center; justify-content:center; color:#a9c4e6; }
+  .card__media svg { width:38%; height:38%; }
+  .card__body { padding:16px; display:flex; flex-direction:column; gap:7px; flex:1; }
+  .card__cat { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--blue-600); }
+  .card__name { font-size:15px; font-weight:600; color:var(--navy); line-height:1.3; min-height:39px; }
+  .card__foot { margin-top:auto; display:flex; align-items:flex-end; justify-content:space-between; padding-top:6px; }
+  .card__price { font-size:19px; font-weight:800; color:var(--navy); }
+  .card__add { width:40px; height:40px; border:none; border-radius:10px; background:var(--orange); color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 20px -8px rgba(243,116,2,.6); }
+  .stock { font-size:11.5px; font-weight:700; color:#1f9d57; }
+</style>
+</head>
+<body>
+  <div class="promo"><i data-lucide="truck" style="width:16px"></i> Envío gratis en compras desde S/ 199 — solo esta semana</div>
+  <nav class="nav"><div class="nav__in">
+    <div class="brand">Krypt<span class="a">o</span>n</div>
+    <div class="nav__links">
+      <a style="color:var(--navy);font-weight:700">Catálogo</a>
+      <a class="drop">Categorías <i data-lucide="chevron-down" style="width:15px"></i></a>
+      <a>Ofertas</a><a>Mis pedidos</a>
+    </div>
+    <div class="nav__right">
+      <button class="iconbtn"><i data-lucide="search" style="width:19px"></i></button>
+      <button class="iconbtn"><i data-lucide="shopping-cart" style="width:19px"></i><span class="badge">1</span></button>
+      <span class="user">admin@krypton.pe</span>
+    </div>
+  </div></nav>
+
+  <div class="wrap">
+    <div class="crumb">Inicio / Catálogo</div>
+    <div class="head"><h1>Catálogo</h1><span class="count">24 productos</span></div>
+
+    <div class="layout">
+      <aside class="filters">
+        <h3>Buscar</h3>
+        <div class="search"><i data-lucide="search" style="width:16px"></i><input placeholder="Buscar por nombre…"></div>
+        <h3>Categorías</h3>
+        <ul class="cat-list">
+          <li class="on">Todas <span>24</span></li>
+          <li>Laptops <span>5</span></li>
+          <li>Componentes <span>7</span></li>
+          <li>Periféricos <span>4</span></li>
+          <li>Monitores <span>3</span></li>
+          <li>Audio <span>5</span></li>
+        </ul>
+        <h3>Precio máx.</h3>
+        <div class="slider"></div>
+        <div class="price-row"><span>S/ 0</span><span>S/ 2,600</span></div>
+      </aside>
+
+      <section class="grid" id="grid"></section>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    const ICON = { laptop:'laptop', gpu:'cpu', ram:'memory-stick', ssd:'hard-drive', audio:'headphones', monitor:'monitor', kb:'keyboard', mouse:'mouse' };
+    const products = [
+      ['LAPTOPS','Laptop Acer Aspire Lite AL16 i3-N305 8GB 512GB','S/ 2,099.00','laptop',12],
+      ['COMPONENTES','Gigabyte GeForce RTX 4070 Windforce 12GB OC','S/ 2,599.00','gpu',8],
+      ['COMPONENTES','Memoria RAM Kingston Fury Impact 16GB DDR5','S/ 559.00','ram',40],
+      ['COMPONENTES','Corsair SSD M.2 1TB MP700 PCIe 5.0 NVMe','S/ 729.00','ssd',22],
+      ['AUDIO','Audífonos Krypton Pulse X · cancelación de ruido','S/ 349.90','audio',35],
+      ['MONITORES','Monitor Krypton View 27" QHD 165Hz IPS','S/ 1,099.00','monitor',15],
+      ['PERIFÉRICOS','Teclado Mecánico Krypton TKL · hot-swap RGB','S/ 259.00','kb',30],
+      ['PERIFÉRICOS','Mouse Krypton Glide Pro · 26000 DPI · 60g','S/ 179.00','mouse',45],
+      ['LAPTOPS','Laptop Krypton Vortex 15 · i7 · RTX 4060 · 16GB','S/ 4,299.00','laptop',6],
+    ];
+    document.getElementById('grid').innerHTML = products.map(([cat,name,price,ic,stk]) => `
+      <article class="card">
+        <div class="card__media"><i data-lucide="${ICON[ic]}"></i></div>
+        <div class="card__body">
+          <span class="card__cat">${cat}</span>
+          <span class="card__name">${name}</span>
+          <span class="stock">● En stock: ${stk}</span>
+          <div class="card__foot">
+            <span class="card__price">${price}</span>
+            <button class="card__add"><i data-lucide="shopping-cart" style="width:18px"></i></button>
+          </div>
+        </div>
+      </article>`).join('');
+    lucide.createIcons();
+  </script>
+</body>
+</html>

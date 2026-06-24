@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Anexo 3b — Dashboard de administración (mockup hi-fi) · Krypton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#03275A; --navy-deep:#021a3d; --blue:#1A7DD7; --orange:#F37402; --yellow:#F2B809;
+    --page:#eef1f6; --card:#fff; --ink:#03275A; --text:#26415f; --muted:#5b6b82; --faint:#8a98ab;
+    --border:#e3e9f1; --gray-50:#f5f7fa; --green:#1f9d57; --sans:'Kanit',system-ui,sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:var(--sans); background:var(--page); color:var(--text); display:flex; min-height:100vh; }
+
+  /* sidebar */
+  .side { width:248px; background:radial-gradient(130% 120% at 20% -10%,#0a3a7a 0%,var(--navy) 50%,var(--navy-deep) 100%); color:#fff; padding:24px 16px; flex:none; }
+  .side .brand { font-weight:900; font-style:italic; font-size:24px; letter-spacing:-.02em; padding:0 8px 22px; }
+  .side .brand .a { color:var(--orange); }
+  .side nav { display:flex; flex-direction:column; gap:4px; }
+  .side a { display:flex; align-items:center; gap:11px; padding:11px 14px; border-radius:11px; font-size:14px; font-weight:600; color:rgba(255,255,255,.72); }
+  .side a:hover { background:rgba(255,255,255,.08); color:#fff; }
+  .side a.on { background:var(--orange); color:#fff; box-shadow:0 10px 24px -10px rgba(243,116,2,.7); }
+  .side a svg { width:18px; height:18px; }
+  .side .sep { margin:18px 8px 10px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.4); }
+
+  /* main */
+  .main { flex:1; padding:30px 34px 60px; }
+  .top { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:26px; }
+  .top h1 { font-weight:900; font-size:30px; letter-spacing:-.02em; color:var(--navy); }
+  .top p { color:var(--muted); font-size:14px; margin-top:3px; }
+  .actions { display:flex; gap:10px; }
+  .btn { height:40px; padding:0 16px; border-radius:11px; border:1px solid var(--border); background:#fff; font-family:var(--sans); font-weight:700; font-size:13.5px; color:var(--navy); display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
+  .btn--pdf { border-color:var(--orange); color:var(--orange); }
+
+  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:24px; }
+  .kpi { background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px 20px; box-shadow:0 14px 32px -24px rgba(3,39,90,.5); }
+  .kpi .lbl { font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--faint); display:flex; align-items:center; gap:7px; }
+  .kpi .lbl svg { width:15px; height:15px; color:var(--blue); }
+  .kpi .val { font-size:28px; font-weight:900; color:var(--navy); margin-top:8px; letter-spacing:-.01em; }
+  .kpi .delta { font-size:12px; font-weight:700; color:var(--green); margin-top:2px; }
+
+  .charts { display:grid; grid-template-columns:1.4fr 1fr; gap:18px; }
+  .panel { background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px 22px; box-shadow:0 14px 32px -24px rgba(3,39,90,.5); }
+  .panel h2 { font-size:16px; font-weight:800; color:var(--navy); margin-bottom:4px; }
+  .panel .cap { font-size:12.5px; color:var(--muted); margin-bottom:16px; }
+
+  .bars { display:flex; align-items:flex-end; gap:14px; height:200px; padding-top:10px; border-bottom:2px solid var(--border); }
+  .bar { flex:1; background:linear-gradient(180deg,var(--blue),#0e5fa8); border-radius:7px 7px 0 0; position:relative; }
+  .bar span { position:absolute; top:-20px; left:0; right:0; text-align:center; font-size:11px; font-weight:700; color:var(--navy); }
+  .xaxis { display:flex; gap:14px; margin-top:8px; }
+  .xaxis span { flex:1; text-align:center; font-size:11px; color:var(--faint); }
+
+  .hbars { display:flex; flex-direction:column; gap:14px; }
+  .hbar { font-size:13px; }
+  .hbar .t { display:flex; justify-content:space-between; margin-bottom:5px; font-weight:600; color:var(--text); }
+  .hbar .track { height:12px; background:var(--gray-50); border-radius:999px; overflow:hidden; }
+  .hbar .fill { height:100%; background:linear-gradient(90deg,var(--orange),#f39a3e); border-radius:999px; }
+</style>
+</head>
+<body>
+  <aside class="side">
+    <div class="brand">Krypt<span class="a">o</span>n</div>
+    <div class="sep">Administración</div>
+    <nav>
+      <a><i data-lucide="package"></i> Productos</a>
+      <a><i data-lucide="tags"></i> Categorías</a>
+      <a><i data-lucide="shopping-bag"></i> Pedidos</a>
+      <a><i data-lucide="users"></i> Usuarios</a>
+      <a class="on"><i data-lucide="bar-chart-3"></i> Reportes</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div><h1>Reportes</h1><p>Panel de indicadores · 1–30 de junio 2026</p></div>
+      <div class="actions">
+        <button class="btn"><i data-lucide="sheet" style="width:16px"></i> Excel</button>
+        <button class="btn btn--pdf"><i data-lucide="file-text" style="width:16px"></i> PDF</button>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="lbl"><i data-lucide="dollar-sign"></i> Total facturado</div><div class="val">S/ 24,580</div><div class="delta">▲ 12% vs. mes previo</div></div>
+      <div class="kpi"><div class="lbl"><i data-lucide="shopping-bag"></i> Órdenes</div><div class="val">37</div><div class="delta">▲ 8 nuevas</div></div>
+      <div class="kpi"><div class="lbl"><i data-lucide="receipt"></i> Ticket promedio</div><div class="val">S/ 664</div><div class="delta">▲ 4%</div></div>
+      <div class="kpi"><div class="lbl"><i data-lucide="box"></i> Productos activos</div><div class="val">24</div><div class="delta" style="color:var(--muted)">3 con stock bajo</div></div>
+    </div>
+
+    <div class="charts">
+      <div class="panel">
+        <h2>Ventas por período</h2>
+        <div class="cap">Ingresos por semana (S/)</div>
+        <div class="bars">
+          <div class="bar" style="height:48%"><span>2.1k</span></div>
+          <div class="bar" style="height:66%"><span>3.0k</span></div>
+          <div class="bar" style="height:40%"><span>1.8k</span></div>
+          <div class="bar" style="height:82%"><span>4.2k</span></div>
+          <div class="bar" style="height:58%"><span>2.6k</span></div>
+          <div class="bar" style="height:95%"><span>5.1k</span></div>
+          <div class="bar" style="height:74%"><span>3.6k</span></div>
+        </div>
+        <div class="xaxis"><span>Sem 1</span><span>Sem 2</span><span>Sem 3</span><span>Sem 4</span><span>Sem 5</span><span>Sem 6</span><span>Sem 7</span></div>
+      </div>
+
+      <div class="panel">
+        <h2>Productos más vendidos</h2>
+        <div class="cap">Unidades vendidas (top 5)</div>
+        <div class="hbars">
+          <div class="hbar"><div class="t"><span>RTX 4070 Windforce</span><span>42</span></div><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="hbar"><div class="t"><span>SSD MP700 1TB</span><span>35</span></div><div class="track"><div class="fill" style="width:83%"></div></div></div>
+          <div class="hbar"><div class="t"><span>Audífonos Pulse X</span><span>28</span></div><div class="track"><div class="fill" style="width:67%"></div></div></div>
+          <div class="hbar"><div class="t"><span>Teclado TKL</span><span>21</span></div><div class="track"><div class="fill" style="width:50%"></div></div></div>
+          <div class="hbar"><div class="t"><span>Mouse Glide Pro</span><span>17</span></div><div class="track"><div class="fill" style="width:40%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
