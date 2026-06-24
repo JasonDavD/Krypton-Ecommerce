@@ -28,6 +28,7 @@ Thumbs.db
 
 # ===== Claude Code (config local de cada máquina) =====
 .claude/settings.local.json
+.claude/skills/
 
 # ===== Logs =====
 *.log
