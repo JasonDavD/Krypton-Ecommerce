@@ -67,10 +67,13 @@ export function HomePage() {
               <span style={{ color: '#fff' }}>Tecnología<br />que&nbsp;</span>
               <span className="accent">enciende.</span>
             </h1>
-            <p className="hero__sub">
-              Laptops, componentes y audio de última generación. Arma tu setup con lo mejor de la
-              tecnología — envíos a todo el Perú en 24 horas.
-            </p>
+            <div className="hero__sub">
+              <p>
+                Laptops, componentes y audio de última generación. Arma tu setup con lo mejor de la
+                tecnología.
+              </p>
+              <p>Envíos a todo el Perú en 24 horas.</p>
+            </div>
             <div className="hero__ctas">
               <Link to="/catalogo" className="cta-pri">Explorar el catálogo <ArrowRight size={20} /></Link>
               <button type="button" className="ghost" onClick={() => comingSoon.show('Ofertas')}>
